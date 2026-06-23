@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Management System</title>
+<style>
+:root{--pr:#1a73e8;--prd:#1557b0;--ok:#1e8e3e;--err:#d93025;--warn:#f29900;--bg:#f1f3f4;--wh:#fff;--tx:#202124;--muted:#5f6368;--brd:#dadce0;--rad:8px;--sw:240px;--hh:58px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+
+/* ── LOGIN ── */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a73e8,#0d47a1)}
+.lbox{background:#fff;padding:40px;border-radius:16px;width:380px;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.lbox .logo{font-size:52px;text-align:center;margin-bottom:10px}
+.lbox h2{text-align:center;color:var(--pr);font-size:20px;margin-bottom:4px}
+.lbox p{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px}
+
+/* ── APP SHELL ── */
+#app{display:none}
+.layout{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--brd);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;overflow-y:auto;transition:transform .2s}
+.sb-head{padding:16px 20px;border-bottom:1px solid var(--brd)}
+.sb-head h3{font-size:13px;color:var(--pr);font-weight:700}
+.sb-head p{font-size:10px;color:var(--muted);margin-top:2px}
+.sb-user{padding:12px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--brd);background:#f8f9fa}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.sb-user .info strong{font-size:12px;display:block}
+.sb-user .info span{font-size:10px;color:var(--muted)}
+.sidebar nav{flex:1;padding:6px 0}
+.nlabel{font-size:10px;color:var(--muted);font-weight:700;padding:10px 20px 3px;text-transform:uppercase;letter-spacing:.8px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 20px;cursor:pointer;color:var(--muted);font-size:13px;border-left:3px solid transparent;transition:all .12s}
+.ni:hover{background:#f1f3f4;color:var(--pr)}
+.ni.active{background:#e8f0fe;color:var(--pr);border-left-color:var(--pr);font-weight:600}
+.ni .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-foot{padding:12px 20px;border-top:1px solid var(--brd);display:flex;flex-direction:column;gap:6px}
+.sb-foot button{width:100%;padding:7px;border:1px solid var(--brd);border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:var(--muted)}
+.sb-foot button:hover{background:#f1f3f4}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sw);flex:1;min-width:0}
+.topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:100;gap:12px}
+.topbar h1{font-size:15px;font-weight:600;flex:1}
+.topbar-date{color:var(--muted);font-size:11px}
+.content{padding:20px}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:var(--rad);border:1px solid var(--brd);padding:18px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:#fff;border-radius:var(--rad);border:1px solid var(--brd);padding:16px 18px}
+.sc .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.sc .val{font-size:24px;font-weight:700}
+.sc .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.blue .val{color:var(--pr)}.green .val{color:var(--ok)}.red .val{color:var(--err)}.orange .val{color:var(--warn)}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto;border-radius:var(--rad);border:1px solid var(--brd);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#f8f9fa;padding:9px 12px;text-align:left;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--brd);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--brd);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafbfc}
+
+/* ── FORMS ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fg1{grid-template-columns:1fr}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.s2{grid-column:span 2}.f.s3{grid-column:span 3}
+label{font-size:11px;font-weight:600;color:var(--muted)}
+input,select,textarea{padding:8px 11px;border:1px solid var(--brd);border-radius:6px;font-size:13px;color:var(--tx);background:#fff;width:100%;outline:none;transition:border .12s}
+input:focus,select:focus,textarea:focus{border-color:var(--pr);box-shadow:0 0 0 3px rgba(26,115,232,.1)}
+input[readonly]{background:#f8f9fa}
+textarea{resize:vertical;min-height:70px}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all .12s;white-space:nowrap}
+.bp{background:var(--pr);color:#fff}.bp:hover{background:var(--prd)}
+.bs{background:var(--ok);color:#fff}.bs:hover{background:#187733}
+.bd{background:var(--err);color:#fff}.bd:hover{background:#b8271f}
+.bw{background:var(--warn);color:#fff}.bw:hover{background:#d98900}
+.bo{background:#fff;color:var(--tx);border:1px solid var(--brd)}.bo:hover{background:#f1f3f4}
+.bsm{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── BADGE ── */
+.badge{padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600}
+.b-ok{background:#e6f4ea;color:var(--ok)}.b-err{background:#fce8e6;color:var(--err)}
+.b-warn{background:#fef7e0;color:var(--warn)}.b-info{background:#e8f0fe;color:var(--pr)}.b-gray{background:#f1f3f4;color:var(--muted)}
+
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.mo.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-lg{max-width:880px}
+.mh{padding:18px 22px 14px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.mh h3{font-size:15px;font-weight:600}
+.mh .x{cursor:pointer;font-size:20px;color:var(--muted);background:none;border:none;line-height:1}
+.mb{padding:20px 22px}
+.mf{padding:14px 22px;border-top:1px solid var(--brd);display:flex;justify-content:flex-end;gap:10px}
+
+/* ── PAGE ── */
+.page{display:none}.page.active{display:block}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.ph h2{font-size:17px;font-weight:600}
+.fbar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.fbar input,.fbar select{max-width:190px}
+.stitle{font-size:13px;font-weight:600;margin-bottom:10px}
+
+/* ── ATTENDANCE CARDS ── */
+.att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.att-card{background:#fff;border:1px solid var(--brd);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:11px}
+.att-emp{flex:1;min-width:0}
+.att-emp .name{font-size:13px;font-weight:600}
+.att-emp .dept{font-size:11px;color:var(--muted)}
+.att-btns{display:flex;gap:5px;flex-wrap:wrap}
+.ab{padding:4px 9px;border-radius:20px;border:1.5px solid;cursor:pointer;font-size:11px;font-weight:600;transition:all .12s;background:#fff}
+.ab.P{border-color:var(--ok);color:var(--ok)}.ab.P.on{background:var(--ok);color:#fff}
+.ab.A{border-color:var(--err);color:var(--err)}.ab.A.on{background:var(--err);color:#fff}
+.ab.L{border-color:var(--warn);color:var(--warn)}.ab.L.on{background:var(--warn);color:#fff}
+.ab.H{border-color:#9c27b0;color:#9c27b0}.ab.H.on{background:#9c27b0;color:#fff}
+
+/* ── INVOICE ITEMS ── */
+.irow{display:grid;grid-template-columns:3fr 70px 110px 110px 36px;gap:7px;align-items:center;margin-bottom:7px}
+.irow input{padding:6px 9px}
+
+/* ── ALERTS ── */
+.alert{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:12px}
+.al-ok{background:#e6f4ea;color:var(--ok);border:1px solid #a8d5b5}
+.al-err{background:#fce8e6;color:var(--err);border:1px solid #f5c6c3}
+.al-info{background:#e8f0fe;color:var(--pr);border:1px solid #c5d8fc}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.ti{padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:sIn .25s ease;max-width:300px}
+.ti.s{background:var(--ok);color:#fff}.ti.e{background:var(--err);color:#fff}.ti.i{background:var(--pr);color:#fff}
+@keyframes sIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+
+/* ── LEDGER ── */
+.led-bal{padding:11px 14px;background:#e8f0fe;border-radius:6px;display:flex;justify-content:space-between;margin-top:10px;font-weight:600;font-size:13px}
+
+/* ── PROFIT LOSS ── */
+.plr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd);font-size:13px}
+.plt{display:flex;justify-content:space-between;padding:11px 0;font-weight:700;font-size:15px;border-top:2px solid var(--tx);margin-top:3px}
+
+/* ── SEARCH ── */
+.sb{position:relative}.sb input{padding-left:30px}
+.sb::before{content:'🔍';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+
+/* ── PRINT / PDF ── */
+@media print{
+  .sidebar,.topbar,#toast,.no-print{display:none!important}
+  .main{margin-left:0!important}
+  .content{padding:0!important}
+  body{background:#fff}
+  .page{display:block!important}
+  .page:not(.active){display:none!important}
+}
+.print-area{display:none}
+@media print{.print-area{display:block}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  :root{--sw:0px}
+  .sidebar{transform:translateX(-240px);width:240px}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .fg{grid-template-columns:1fr}.fg3{grid-template-columns:1fr}
+  .f.s2,.f.s3{grid-column:span 1}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  #menuBtn{display:flex!important}
+}
+
+/* ── PASS STRENGTH ── */
+.ps-bar{height:4px;border-radius:2px;background:#e0e0e0;margin-top:4px}
+.ps-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="loginPage">
+  <div class="lbox">
+    <div class="logo">🏢</div>
+    <h2>Company Management</h2>
+    <p>Login karo apne account mein</p>
+    <div id="lAlert"></div>
+    <div class="f" style="margin-bottom:12px">
+      <label>Username</label>
+      <input type="text" id="lUser" placeholder="Username" autocomplete="username">
+    </div>
+    <div class="f" style="margin-bottom:18px">
+      <label>Password</label>
+      <div style="position:relative">
+        <input type="password" id="lPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" id="lPass">
+        <button onclick="togglePw('lPass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:14px;color:var(--muted)">👁</button>
+      </div>
+    </div>
+    <button class="btn bp" style="width:100%;padding:10px;justify-content:center" onclick="doLogin()" id="lBtn">🔐 Login</button>
+    <p style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted)">Default: <strong>admin</strong> / <strong>admin123</strong></p>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-head"><h3>🏢 Company ERP</h3><p>Management System v2</p></div>
+  <div class="sb-user">
+    <div class="avatar" id="sbAv">A</div>
+    <div class="info"><strong id="sbName">Admin</strong><span id="sbRole">Administrator</span></div>
+  </div>
+  <nav>
+    <div class="nlabel">Main</div>
+    <div class="ni active" onclick="nav('dashboard')" data-p="dashboard"><span class="ic">📊</span>Dashboard</div>
+    <div class="nlabel">HR</div>
+    <div class="ni" onclick="nav('employees')" data-p="employees"><span class="ic">👨‍💼</span>Employees</div>
+    <div class="ni" onclick="nav('attendance')" data-p="attendance"><span class="ic">📅</span>Attendance</div>
+    <div class="ni" onclick="nav('salary')" data-p="salary"><span class="ic">💰</span>Salary</div>
+    <div class="nlabel">Finance</div>
+    <div class="ni" onclick="nav('invoices')" data-p="invoices"><span class="ic">🧾</span>Invoices</div>
+    <div class="ni" onclick="nav('expenses')" data-p="expenses"><span class="ic">📉</span>Expenses</div>
+    <div class="ni" onclick="nav('accounts')" data-p="accounts"><span class="ic">📚</span>Accounts</div>
+    <div class="ni" onclick="nav('journal')" data-p="journal"><span class="ic">📖</span>Journal</div>
+    <div class="ni" onclick="nav('reports')" data-p="reports"><span class="ic">📈</span>Reports</div>
+    <div class="nlabel">Operations</div>
+    <div class="ni" onclick="nav('inventory')" data-p="inventory"><span class="ic">📦</span>Inventory</div>
+    <div class="ni" onclick="nav('users')" data-p="users"><span class="ic">👥</span>Users</div>
+  </nav>
+  <div class="sb-foot">
+    <button onclick="openM('pwModal')">🔑 Change Password</button>
+    <button onclick="doLogout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main">
+  <div class="topbar">
+    <button class="btn bo bsm" id="menuBtn" onclick="toggleSB()" style="display:none;font-size:16px;padding:6px 10px">☰</button>
+    <h1 id="pgTitle">Dashboard</h1>
+    <div class="topbar-date" id="tbDate"></div>
+    <button class="btn bo bsm no-print" onclick="refreshCurrentPage()" title="Refresh data">🔄</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid" id="dashStats">
+        <div class="sc"><div class="lbl">Total Employees</div><div class="val blue" id="d-te">—</div><div class="sub">Registered staff</div></div>
+        <div class="sc"><div class="lbl">Active Staff</div><div class="val green" id="d-ae">—</div><div class="sub">Currently working</div></div>
+        <div class="sc"><div class="lbl">Present Today</div><div class="val green" id="d-pt">—</div><div class="sub" id="d-at">Absent: —</div></div>
+        <div class="sc"><div class="lbl">Monthly Salary</div><div class="val orange" id="d-ms">—</div><div class="sub">This month total</div></div>
+        <div class="sc"><div class="lbl">Total Income</div><div class="val green" id="d-ti">—</div><div class="sub">Invoices collected</div></div>
+        <div class="sc"><div class="lbl">Total Expenses</div><div class="val red" id="d-te2">—</div><div class="sub">All expenses</div></div>
+        <div class="sc"><div class="lbl">Net Profit / Loss</div><div class="val" id="d-np">—</div><div class="sub">Income − Expenses</div></div>
+        <div class="sc"><div class="lbl">Pending Invoices</div><div class="val orange" id="d-pi">—</div><div class="sub">Unpaid amount</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div class="card"><div class="stitle">🧾 Recent Invoices</div><div id="dInv">Loading...</div></div>
+        <div class="card"><div class="stitle">📉 Recent Expenses</div><div id="dExp">Loading...</div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn bp" onclick="nav('employees');openM('empModal')">➕ Add Employee</button>
+        <button class="btn bs" onclick="nav('invoices');openM('invModal')">🧾 New Invoice</button>
+        <button class="btn bw" onclick="nav('expenses');openM('expModal')">📉 Add Expense</button>
+        <button class="btn bo" onclick="nav('attendance')">📅 Attendance</button>
+        <button class="btn bo" onclick="nav('salary')">💰 Salary</button>
+      </div>
+    </div>
+
+    <!-- ══════════ EMPLOYEES ══════════ -->
+    <div class="page" id="page-employees">
+      <div class="ph">
+        <h2>Employee Management</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bo bsm" onclick="printEmployeeList()">🖨️ Print List</button>
+          <button class="btn bp" onclick="openM('empModal')">➕ Add Employee</button>
+        </div>
+      </div>
+      <div class="fbar">
+        <div class="sb"><input type="text" id="empSrch" placeholder="Search name / CNIC / phone..." oninput="filterEmp()"></div>
+        <select id="empDf" onchange="filterEmp()"><option value="">All Departments</option></select>
+        <select id="empSf" onchange="filterEmp()"><option value="">All Status</option><option>Active</option><option>Left</option></select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Emp ID</th><th>Name</th><th>Dept</th><th>Designation</th><th>Phone</th><th>Basic Salary</th><th>Joining</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="empTbl"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ ATTENDANCE ══════════ -->
+    <div class="page" id="page-attendance">
+      <div class="ph">
+        <h2>Attendance</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="date" id="attDate" style="max-width:160px">
+          <button class="btn bp" onclick="loadAttCards()">📋 Load</button>
+          <button class="btn bs" onclick="saveAllAtt()" id="saveAttBtn" style="display:none">💾 Save All</button>
+          <button class="btn bo bsm" onclick="printAttendance()">🖨️ Print</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn bo bsm" onclick="attView('mark')">✏️ Mark Attendance</button>
+        <button class="btn bo bsm" onclick="attView('view')">📋 View Records</button>
+      </div>
+
+      <!-- MARK -->
+      <div id="attMarkArea">
+        <div id="attSummaryBar" style="display:none;background:#fff;border:1px solid var(--brd);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;gap:20px;flex-wrap:wrap;font-size:13px">
+          <span>✅ Present: <strong id="cntP">0</strong></span>
+          <span>❌ Absent: <strong id="cntA">0</strong></span>
+          <span>⏰ Late: <strong id="cntL">0</strong></span>
+          <span>📋 Total: <strong id="cntT">0</strong></span>
+        </div>
+        <div class="att-grid" id="attCards">
+          <div class="empty"><div class="ei">📅</div><p>Tarikh select karo aur Load dabao</p></div>
+        </div>
+      </div>
+
+      <!-- VIEW -->
+      <div id="attViewArea" style="display:none">
+        <div class="fbar">
+          <input type="date" id="attVDate" onchange="loadAttView()">
+          <select id="attVStat" onchange="loadAttView()"><option value="">All Status</option><option>Present</option><option>Absent</option><option>Late</option><option>Half Day</option></select>
+          <input type="text" id="attVEmp" placeholder="Employee name..." oninput="loadAttView()" style="max-width:180px">
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Att ID</th><th>Date</th><th>Employee</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="attTbl"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No records</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SALARY ══════════ -->
+    <div class="page" id="page-salary">
+      <div class="ph">
+        <h2>Salary Management</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bo bsm" onclick="printSalarySheet()">🖨️ Print Sheet</button>
+          <button class="btn bo" onclick="openM('salManModal')">➕ Manual Entry</button>
+          <button class="btn bp" onclick="openM('genSalModal')">⚙️ Generate Monthly</button>
+        </div>
+      </div>
+      <div class="fbar">
+        <select id="salMo"><option value="">Month</option></select>
+        <select id="salYr"><option value="">Year</option></select>
+        <button class="btn bp bsm" onclick="loadSal()">🔍 Load</button>
+        <select id="salPF" onchange="loadSal()"><option value="">All</option><option value="No">Unpaid</option><option value="Yes">Paid</option></select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Sal ID</th><th>Employee</th><th>Month/Year</th><th>Basic</th><th>Allowances</th><th>Deductions</th><th>Net Salary</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="salTbl"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Month aur Year select karo</td></tr></tbody>
+        </table>
+      </div>
+      <div id="salSum" style="margin-top:14px;display:none">
+        <div class="card" style="display:flex;gap:24px;flex-wrap:wrap">
+          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Total Salary</div><div style="font-size:20px;font-weight:700" id="sTot">—</div></div>
+          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Paid</div><div style="font-size:20px;font-weight:700;color:var(--ok)" id="sPaid">—</div></div>
+          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Remaining</div><div style="font-size:20px;font-weight:700;color:var(--err)" id="sRem">—</div></div>
+          <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Employees</div><div style="font-size:20px;font-weight:700;color:var(--pr)" id="sCnt">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ INVOICES ══════════ -->
+    <div class="page" id="page-invoices">
+      <div class="ph">
+        <h2>Invoice / Sales</h2>
+        <button class="btn bp" onclick="openM('invModal')">➕ Create Invoice</button>
+      </div>
+      <div class="fbar">
+        <div class="sb"><input type="text" id="invSrch" placeholder="Customer search..." oninput="filterInv()"></div>
+        <select id="invSF" onchange="filterInv()"><option value="">All Status</option><option>Paid</option><option>Unpaid</option><option>Partial</option></select>
+        <input type="date" id="invDF" onchange="filterInv()" style="max-width:150px">
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Invoice No</th><th>Customer</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="invTbl"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ EXPENSES ══════════ -->
+    <div class="page" id="page-expenses">
+      <div class="ph">
+        <h2>Expense Management</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn bo bsm" onclick="printExpenses()">🖨️ Print</button>
+          <button class="btn bp" onclick="openM('expModal')">➕ Add Expense</button>
+        </div>
+      </div>
+      <div class="fbar">
+        <select id="expCF" onchange="filterExp()"><option value="">All Categories</option></select>
+        <input type="date" id="expDF" onchange="filterExp()" style="max-width:150px">
+        <input type="date" id="expDT" onchange="filterExp()" style="max-width:150px">
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Exp ID</th><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Actions</th></tr></thead>
+          <tbody id="expTbl"><tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="expSum" style="margin-top:10px"></div>
+    </div>
+
+    <!-- ══════════ ACCOUNTS ══════════ -->
+    <div class="page" id="page-accounts">
+      <div class="ph"><h2>Chart of Accounts</h2><button class="btn bp" onclick="openM('accModal')">➕ Add Account</button></div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Acc ID</th><th>Account Name</th><th>Type</th><th>Opening Balance</th><th>Actions</th></tr></thead>
+          <tbody id="accTbl"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ JOURNAL ══════════ -->
+    <div class="page" id="page-journal">
+      <div class="ph">
+        <h2>Journal Entries</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn bo bsm" onclick="printJournal()">🖨️ Print</button>
+          <button class="btn bp" onclick="openM('jrnModal')">➕ Add Entry</button>
+        </div>
+      </div>
+      <div class="fbar">
+        <input type="date" id="jrnDF" onchange="loadJrn()" style="max-width:150px">
+        <input type="date" id="jrnDT" onchange="loadJrn()" style="max-width:150px">
+        <div class="sb"><input type="text" id="jrnSrch" placeholder="Search..." oninput="loadJrn()"></div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Jrn ID</th><th>Date</th><th>Debit Account</th><th>Credit Account</th><th>Amount</th><th>Description</th><th>Reference</th></tr></thead>
+          <tbody id="jrnTbl"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ REPORTS ══════════ -->
+    <div class="page" id="page-reports">
+      <div class="ph"><h2>Financial Reports</h2>
+        <button class="btn bo bsm" onclick="window.print()">🖨️ Print Report</button>
+      </div>
+      <div style="display:flex;gap:9px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn bo" onclick="showRpt('tb')">📊 Trial Balance</button>
+        <button class="btn bo" onclick="showRpt('pl')">📈 Profit & Loss</button>
+        <button class="btn bo" onclick="openM('ledgerModal')">📖 Ledger</button>
+        <button class="btn bo" onclick="openM('mrModal')">📅 Monthly Report</button>
+      </div>
+      <div id="rptArea"></div>
+    </div>
+
+    <!-- ══════════ INVENTORY ══════════ -->
+    <div class="page" id="page-inventory">
+      <div class="ph">
+        <h2>Inventory Management</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn bo bsm" onclick="printInventory()">🖨️ Print</button>
+          <button class="btn bp" onclick="openM('invtModal')">➕ Add Item</button>
+        </div>
+      </div>
+      <div class="fbar">
+        <div class="sb"><input type="text" id="invtSrch" placeholder="Search items..." oninput="filterInvt()"></div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Item ID</th><th>Name</th><th>Category</th><th>Stock In</th><th>Stock Out</th><th>Remaining</th><th>Cost</th><th>Selling</th><th>Unit</th><th>Actions</th></tr></thead>
+          <tbody id="invtTbl"><tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ USERS ══════════ -->
+    <div class="page" id="page-users">
+      <div class="ph"><h2>User Management</h2><button class="btn bp" onclick="openM('userModal')">➕ Add User</button></div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>User ID</th><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+          <tbody id="userTbl"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+
+<!-- EMPLOYEE -->
+<div class="mo" id="empModal">
+  <div class="modal">
+    <div class="mh"><h3 id="empMT">Add Employee</h3><button class="x" onclick="closeM('empModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="eID">
+      <div class="fg">
+        <div class="f"><label>Full Name *</label><input id="eName" placeholder="Employee ka poora naam"></div>
+        <div class="f"><label>Father Name</label><input id="eFN" placeholder="Father name"></div>
+        <div class="f"><label>CNIC</label><input id="eCNIC" placeholder="00000-0000000-0"></div>
+        <div class="f"><label>Phone *</label><input id="ePh" placeholder="03XX-XXXXXXX"></div>
+        <div class="f"><label>Department</label>
+          <select id="eDept"><option>HR</option><option>Finance</option><option>Sales</option><option>IT</option><option>Operations</option><option>Admin</option><option>Production</option><option>Marketing</option><option>Security</option></select>
+        </div>
+        <div class="f"><label>Designation</label><input id="eDesig" placeholder="Job title"></div>
+        <div class="f"><label>Basic Salary (Rs) *</label><input type="number" id="eSal" placeholder="25000" min="0"></div>
+        <div class="f"><label>Joining Date</label><input type="date" id="eJoin"></div>
+        <div class="f s2"><label>Address</label><input id="eAddr" placeholder="Complete address"></div>
+        <div class="f"><label>Status</label><select id="eStat"><option>Active</option><option>Left</option></select></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('empModal')">Cancel</button>
+      <button class="btn bp" onclick="saveEmp()" id="saveEmpBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALARY MANUAL -->
+<div class="mo" id="salManModal">
+  <div class="modal">
+    <div class="mh"><h3>Add Salary Record</h3><button class="x" onclick="closeM('salManModal')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="f"><label>Employee *</label><select id="smEmp" onchange="fillSalEmp()"><option value="">Select...</option></select></div>
+        <div class="f"><label>Month *</label>
+          <select id="smMo">
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="f"><label>Year *</label><input type="number" id="smYr" value="2025" min="2020" max="2099"></div>
+        <div class="f"><label>Basic Salary (Rs)</label><input type="number" id="smBase" oninput="calcNet()" placeholder="0"></div>
+        <div class="f"><label>Allowances (Rs)</label><input type="number" id="smAlw" oninput="calcNet()" value="0" placeholder="0"></div>
+        <div class="f"><label>Deductions (Rs)</label><input type="number" id="smDed" oninput="calcNet()" value="0" placeholder="0"></div>
+        <div class="f"><label>Net Salary (Auto)</label><input type="number" id="smNet" readonly></div>
+        <div class="f"><label>Paid?</label><select id="smPaid"><option value="No">Unpaid</option><option value="Yes">Paid</option></select></div>
+        <div class="f s2"><label>Remarks</label><input id="smRem" placeholder="Optional"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('salManModal')">Cancel</button>
+      <button class="btn bp" onclick="saveSalMan()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATE SALARY -->
+<div class="mo" id="genSalModal">
+  <div class="modal">
+    <div class="mh"><h3>Generate Monthly Salaries</h3><button class="x" onclick="closeM('genSalModal')">✕</button></div>
+    <div class="mb">
+      <div class="alert al-info">⚙️ Yeh sab active employees ki salary attendance ke hisaab se auto-calculate karega. Absent = full deduction, Late = half deduction.</div>
+      <div class="fg">
+        <div class="f"><label>Month *</label>
+          <select id="gnMo"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
+        </div>
+        <div class="f"><label>Year *</label><input type="number" id="gnYr" value="2025" min="2020"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('genSalModal')">Cancel</button>
+      <button class="btn bp" onclick="genSal()">⚙️ Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY SALARY -->
+<div class="mo" id="paySalModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><h3>Salary Payment</h3><button class="x" onclick="closeM('paySalModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="psSID">
+      <p style="margin-bottom:14px;font-size:13px" id="psInfo"></p>
+      <div class="f"><label>Payment Date</label><input type="date" id="psDt"></div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('paySalModal')">Cancel</button>
+      <button class="btn bs" onclick="confirmPaySal()">✅ Confirm Paid</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE -->
+<div class="mo" id="invModal">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>Create Invoice</h3><button class="x" onclick="closeM('invModal')">✕</button></div>
+    <div class="mb">
+      <div class="fg" style="margin-bottom:16px">
+        <div class="f"><label>Customer Name *</label><input id="icust" placeholder="Customer naam"></div>
+        <div class="f"><label>Phone</label><input id="iph" placeholder="Phone number"></div>
+        <div class="f"><label>Invoice Date</label><input type="date" id="idate"></div>
+        <div class="f"><label>Amount Paid (Rs)</label><input type="number" id="ipaid" value="0" oninput="calcInvBal()"></div>
+        <div class="f s2"><label>Notes</label><input id="inotes" placeholder="Optional notes"></div>
+      </div>
+      <div class="stitle">Invoice Items</div>
+      <div style="display:grid;grid-template-columns:3fr 70px 110px 110px 36px;gap:7px;margin-bottom:6px;padding:0 2px">
+        <span style="font-size:11px;font-weight:600;color:var(--muted)">Item / Service</span>
+        <span style="font-size:11px;font-weight:600;color:var(--muted)">Qty</span>
+        <span style="font-size:11px;font-weight:600;color:var(--muted)">Unit Price</span>
+        <span style="font-size:11px;font-weight:600;color:var(--muted)">Total</span>
+        <span></span>
+      </div>
+      <div id="iItems"></div>
+      <button class="btn bo bsm" onclick="addIRow()" style="margin-top:6px">➕ Item Add</button>
+      <div style="background:#f8f9fa;padding:10px 14px;border-radius:6px;margin-top:12px;display:flex;justify-content:space-between">
+        <span style="font-weight:600">Grand Total</span><strong id="iGT">Rs 0</strong>
+      </div>
+      <div style="background:#e6f4ea;padding:10px 14px;border-radius:6px;margin-top:6px;display:flex;justify-content:space-between">
+        <span style="font-weight:600">Balance Remaining</span><strong id="iBal">Rs 0</strong>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('invModal')">Cancel</button>
+      <button class="btn bp" onclick="saveInv()">💾 Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE DETAIL -->
+<div class="mo" id="invDetailModal">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>Invoice Detail</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn bs bsm" onclick="printInvoice()">🖨️ Print / PDF</button>
+        <button class="x" onclick="closeM('invDetailModal')">✕</button>
+      </div>
+    </div>
+    <div class="mb" id="invDtlContent"></div>
+  </div>
+</div>
+
+<!-- PAY INVOICE -->
+<div class="mo" id="payInvModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><h3>Update Invoice Payment</h3><button class="x" onclick="closeM('payInvModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="piID">
+      <p style="margin-bottom:14px;font-size:13px" id="piInfo"></p>
+      <div class="f"><label>Total Amount Paid (Rs)</label><input type="number" id="piAmt" placeholder="0" min="0"></div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('payInvModal')">Cancel</button>
+      <button class="btn bs" onclick="confirmPayInv()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div class="mo" id="expModal">
+  <div class="modal">
+    <div class="mh"><h3>Add Expense</h3><button class="x" onclick="closeM('expModal')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="f"><label>Date *</label><input type="date" id="exDt"></div>
+        <div class="f"><label>Category *</label>
+          <select id="exCat"><option>Rent</option><option>Electricity</option><option>Transport</option><option>Salary</option><option>Internet</option><option>Marketing</option><option>Office Supplies</option><option>Maintenance</option><option>Telephone</option><option>Fuel</option><option>Other</option></select>
+        </div>
+        <div class="f"><label>Amount (Rs) *</label><input type="number" id="exAmt" placeholder="0" min="0"></div>
+        <div class="f"><label>Reference / Receipt</label><input id="exRef" placeholder="Receipt No."></div>
+        <div class="f s2"><label>Description</label><textarea id="exDesc" placeholder="Expense detail..." rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('expModal')">Cancel</button>
+      <button class="btn bp" onclick="saveExp()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT -->
+<div class="mo" id="accModal">
+  <div class="modal" style="max-width:460px">
+    <div class="mh"><h3>Add Account</h3><button class="x" onclick="closeM('accModal')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="f"><label>Account Name *</label><input id="acName" placeholder="e.g. Cash, Bank, Salary Expense"></div>
+        <div class="f"><label>Type *</label><select id="acType"><option>Asset</option><option>Liability</option><option>Income</option><option>Expense</option><option>Equity</option></select></div>
+        <div class="f s2"><label>Opening Balance (Rs)</label><input type="number" id="acOB" value="0"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('accModal')">Cancel</button>
+      <button class="btn bp" onclick="saveAcc()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOURNAL ENTRY -->
+<div class="mo" id="jrnModal">
+  <div class="modal">
+    <div class="mh"><h3>Journal Entry</h3><button class="x" onclick="closeM('jrnModal')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="f"><label>Date *</label><input type="date" id="jDt"></div>
+        <div class="f"><label>Amount (Rs) *</label><input type="number" id="jAmt" placeholder="0" min="0"></div>
+        <div class="f"><label>Debit Account *</label><select id="jDr"><option value="">Select Account</option></select></div>
+        <div class="f"><label>Credit Account *</label><select id="jCr"><option value="">Select Account</option></select></div>
+        <div class="f s2"><label>Description *</label><input id="jDesc" placeholder="Transaction detail"></div>
+        <div class="f s2"><label>Reference</label><input id="jRef" placeholder="Invoice / Receipt No."></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('jrnModal')">Cancel</button>
+      <button class="btn bp" onclick="saveJrn()">💾 Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEDGER -->
+<div class="mo" id="ledgerModal">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>Account Ledger</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn bs bsm" onclick="printLedger()">🖨️ Print</button>
+        <button class="x" onclick="closeM('ledgerModal')">✕</button>
+      </div>
+    </div>
+    <div class="mb">
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <div class="f" style="flex:1;min-width:200px"><label>Account Select Karo</label><select id="ledAcc"><option value="">Select Account</option></select></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn bp" onclick="loadLedger()">📖 Load</button></div>
+      </div>
+      <div id="ledContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY REPORT -->
+<div class="mo" id="mrModal">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>Monthly Report</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn bs bsm" onclick="printMR()">🖨️ Print</button>
+        <button class="x" onclick="closeM('mrModal')">✕</button>
+      </div>
+    </div>
+    <div class="mb">
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="f"><label>Month</label>
+          <select id="mrMo"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
+        </div>
+        <div class="f"><label>Year</label><input type="number" id="mrYr" value="2025" min="2020"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn bp" onclick="loadMR()">📊 Generate</button></div>
+      </div>
+      <div id="mrContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div class="mo" id="invtModal">
+  <div class="modal">
+    <div class="mh"><h3 id="invtMT">Add Inventory Item</h3><button class="x" onclick="closeM('invtModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="itID">
+      <div class="fg">
+        <div class="f"><label>Item Name *</label><input id="itName" placeholder="Product naam"></div>
+        <div class="f"><label>Category</label><input id="itCat" placeholder="Category"></div>
+        <div class="f"><label>Stock In</label><input type="number" id="itSIn" value="0" min="0"></div>
+        <div class="f"><label>Stock Out</label><input type="number" id="itSOt" value="0" min="0"></div>
+        <div class="f"><label>Cost Price (Rs)</label><input type="number" id="itCP" value="0" min="0"></div>
+        <div class="f"><label>Selling Price (Rs)</label><input type="number" id="itSP" value="0" min="0"></div>
+        <div class="f"><label>Unit</label><input id="itUnit" value="pcs" placeholder="pcs / kg / ltr"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('invtModal')">Cancel</button>
+      <button class="btn bp" onclick="saveInvt()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- STOCK UPDATE -->
+<div class="mo" id="stockModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><h3>Stock Update</h3><button class="x" onclick="closeM('stockModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="stID">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px" id="stInfo"></p>
+      <div class="fg">
+        <div class="f"><label>Add Stock In</label><input type="number" id="stIn" value="0" min="0"></div>
+        <div class="f"><label>Add Stock Out</label><input type="number" id="stOut" value="0" min="0"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('stockModal')">Cancel</button>
+      <button class="btn bp" onclick="saveStock()">💾 Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="mo" id="userModal">
+  <div class="modal">
+    <div class="mh"><h3 id="userMT">Add User</h3><button class="x" onclick="closeM('userModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="uID">
+      <div class="fg">
+        <div class="f"><label>Full Name *</label><input id="uName" placeholder="Full naam"></div>
+        <div class="f"><label>Username *</label><input id="uUsr" placeholder="Login username"></div>
+        <div class="f"><label>Password *</label>
+          <input type="password" id="uPwd" placeholder="Password">
+          <div class="ps-bar"><div class="ps-fill" id="pwStrBar" style="width:0"></div></div>
+        </div>
+        <div class="f"><label>Role *</label><select id="uRole"><option>Admin</option><option>HR</option><option>Accountant</option><option>Sales</option><option>Viewer</option></select></div>
+        <div class="f"><label>Status</label><select id="uStat"><option>Active</option><option>Inactive</option></select></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('userModal')">Cancel</button>
+      <button class="btn bp" onclick="saveUser()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD -->
+<div class="mo" id="pwModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><h3>Change Password</h3><button class="x" onclick="closeM('pwModal')">✕</button></div>
+    <div class="mb">
+      <div id="pwAlert"></div>
+      <div class="f" style="margin-bottom:12px"><label>Current Password</label><input type="password" id="pwOld" placeholder="Current password"></div>
+      <div class="f" style="margin-bottom:12px"><label>New Password</label><input type="password" id="pwNew" placeholder="New password"></div>
+      <div class="f"><label>Confirm New Password</label><input type="password" id="pwCon" placeholder="Confirm new password"></div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('pwModal')">Cancel</button>
+      <button class="btn bp" onclick="doCPW()">🔑 Change Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ATTENDANCE UPDATE -->
+<div class="mo" id="attUpdModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><h3>Update Attendance</h3><button class="x" onclick="closeM('attUpdModal')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="auID">
+      <div class="fg">
+        <div class="f"><label>Check In</label><input type="time" id="auCI"></div>
+        <div class="f"><label>Check Out</label><input type="time" id="auCO"></div>
+        <div class="f s2"><label>Status</label><select id="auStat"><option>Present</option><option>Absent</option><option>Late</option><option>Half Day</option></select></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('attUpdModal')">Cancel</button>
+      <button class="btn bp" onclick="saveAttUpd()">💾 Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN PRINT FRAME -->
+<div id="printFrame" style="display:none"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+var CU = null; // current user
+var EMP = [];  // employees cache
+var INV = [];  // invoices cache
+var EXP = [];  // expenses cache
+var INVT = []; // inventory cache
+var ACCTS = []; // accounts cache
+var attMap = {}; // {empID: {Status, CheckIn, CheckOut, EmpName, Date}}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+window.onload = function() {
+  var now = new Date();
+  document.getElementById('tbDate').textContent = now.toLocaleDateString('ur-PK',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var td = fmtDate(now);
+  document.getElementById('attDate').value = td;
+  document.getElementById('exDt').value   = td;
+  document.getElementById('idate').value  = td;
+  document.getElementById('jDt').value    = td;
+  document.getElementById('psDt').value   = td;
+
+  var m = now.getMonth()+1, y = now.getFullYear();
+  document.getElementById('gnMo').value = m;
+  document.getElementById('gnYr').value = y;
+  document.getElementById('mrMo').value = m;
+  document.getElementById('mrYr').value = y;
+  document.getElementById('smMo').value = m;
+  document.getElementById('smYr').value = y;
+
+  // Populate month/year selects for salary filter
+  var salMoEl = document.getElementById('salMo');
+  var salYrEl = document.getElementById('salYr');
+  ['January','February','March','April','May','June','July','August','September','October','November','December'].forEach(function(mn,i){
+    salMoEl.innerHTML += '<option value="'+(i+1)+'"'+(i+1===m?' selected':'')+'>'+mn+'</option>';
+  });
+  for(var yr=y;yr>=2020;yr--){
+    salYrEl.innerHTML += '<option value="'+yr+'"'+(yr===y?' selected':'')+'>'+yr+'</option>';
+  }
+
+  // Try restore session
+  try {
+    var saved = sessionStorage.getItem('cms_user');
+    if (saved) { CU = JSON.parse(saved); showApp(); return; }
+  } catch(e){}
+  document.getElementById('lUser').value = 'admin';
+  document.getElementById('lPass').value = 'admin123';
+};
+
+// ════════════════════════════════════════════════════════
+//  GAS BRIDGE
+// ════════════════════════════════════════════════════════
+function gs(fn, args, cb) {
+  if (typeof google === 'undefined') { cb(mockGS(fn, args)); return; }
+  var run = google.script.run
+    .withSuccessHandler(function(r){ cb && cb(r); })
+    .withFailureHandler(function(e){ toast(e.message||'Server error','e'); cb && cb({success:false,error:e.message}); });
+  run[fn].apply(run, args||[]);
+}
+
+// ════════════════════════════════════════════════════════
+//  MOCK (preview / demo mode)
+// ════════════════════════════════════════════════════════
+var M = {
+  employees:[], attendance:[], salaries:[], invoices:[], invoiceItems:[],
+  expenses:[], accounts:[
+    {AccID:'A-001',AccountName:'Cash',Type:'Asset',OpeningBalance:0},
+    {AccID:'A-002',AccountName:'Bank',Type:'Asset',OpeningBalance:0},
+    {AccID:'A-003',AccountName:'Sales Income',Type:'Income',OpeningBalance:0},
+    {AccID:'A-004',AccountName:'Salary Expense',Type:'Expense',OpeningBalance:0},
+    {AccID:'A-005',AccountName:'Rent Expense',Type:'Expense',OpeningBalance:0},
+    {AccID:'A-006',AccountName:'Other Expense',Type:'Expense',OpeningBalance:0},
+    {AccID:'A-007',AccountName:'Accounts Receivable',Type:'Asset',OpeningBalance:0}
+  ],
+  journalEntries:[], inventory:[],
+  users:[{UserID:'U-001',Username:'admin',PasswordHash:'admin123',Role:'Admin',Name:'Administrator',Status:'Active',LastLogin:''}]
+};
+var _mc = {emp:1,att:1,sal:1,inv:1,itm:1,exp:1,jrn:1,acc:8,invt:1,usr:2};
+function pid(pfx,key){return pfx+'-'+String(_mc[key]++).padStart(3,'0');}
+
+function mockGS(fn, a) {
+  var d = a&&a[0], d2=a&&a[1];
+  switch(fn){
+    case 'loginUser': {
+      var u=M.users.find(function(u){return u.Username.toLowerCase()===d.toLowerCase()&&u.PasswordHash===d2&&u.Status==='Active';});
+      return u?{success:true,user:{UserID:u.UserID,Username:u.Username,Role:u.Role,Name:u.Name}}:{success:false,error:'Invalid credentials'};
+    }
+    case 'getDashboardStats': {
+      var td=fmtDate(new Date());
+      var ta=M.attendance.filter(function(a){return a.Date===td;});
+      var ti=M.invoices.reduce(function(s,i){return s+Number(i.PaidAmount||0);},0);
+      var te=M.expenses.reduce(function(s,i){return s+Number(i.Amount||0);},0);
+      return {
+        totalEmployees:M.employees.length, activeEmployees:M.employees.filter(function(e){return e.Status==='Active';}).length,
+        presentToday:ta.filter(function(a){return a.Status==='Present';}).length,
+        absentToday:ta.filter(function(a){return a.Status==='Absent';}).length,
+        lateToday:ta.filter(function(a){return a.Status==='Late';}).length,
+        monthlySalary:M.salaries.reduce(function(s,x){return s+Number(x.NetSalary||0);},0),
+        pendingSalary:M.salaries.filter(function(s){return s.Paid!=='Yes';}).reduce(function(s,x){return s+Number(x.NetSalary||0);},0),
+        totalIncome:ti, totalExpenses:te, netProfit:ti-te,
+        pendingInvoice:M.invoices.filter(function(i){return i.Status!=='Paid';}).reduce(function(s,i){return s+Number(i.TotalAmount||0)-Number(i.PaidAmount||0);},0),
+        recentInvoices:M.invoices.slice(-5).reverse(),
+        recentExpenses:M.expenses.slice(-5).reverse()
+      };
+    }
+    case 'getEmployees': return JSON.parse(JSON.stringify(M.employees));
+    case 'addEmployee': {
+      var id=pid('EMP','emp'); var e=Object.assign({EmpID:id},d); M.employees.push(e);
+      return {success:true,id:id,message:'Employee added — ID: '+id};
+    }
+    case 'updateEmployee': {
+      var i=M.employees.findIndex(function(e){return e.EmpID===d.EmpID;});
+      if(i>=0)M.employees[i]=Object.assign({},M.employees[i],d);
+      return {success:true,message:'Employee updated'};
+    }
+    case 'deleteEmployee': { M.employees=M.employees.filter(function(e){return e.EmpID!==d;}); return {success:true}; }
+    case 'getAttendance': {
+      var res=JSON.parse(JSON.stringify(M.attendance));
+      return d?res.filter(function(a){return a.Date===d;}):res;
+    }
+    case 'upsertAttendance': {
+      (d||[]).forEach(function(rec){
+        if(!rec.Status)return;
+        var ex=M.attendance.find(function(a){return String(a.EmpID)===String(rec.EmpID)&&a.Date===rec.Date;});
+        if(ex){ex.Status=rec.Status;ex.CheckIn=rec.CheckIn||'';ex.CheckOut=rec.CheckOut||'';}
+        else{M.attendance.push({AttID:pid('ATT','att'),EmpID:rec.EmpID,EmpName:rec.EmpName,Date:rec.Date,CheckIn:rec.CheckIn||'',CheckOut:rec.CheckOut||'',Status:rec.Status});}
+      });
+      return {success:true,message:(d||[]).filter(function(r){return !!r.Status;}).length+' record(s) saved'};
+    }
+    case 'updateAttendance': {
+      var ex=M.attendance.find(function(a){return a.AttID===d.AttID;});
+      if(ex){ex.CheckIn=d.CheckIn;ex.CheckOut=d.CheckOut;ex.Status=d.Status;}
+      return {success:true};
+    }
+    case 'getSalaries': {
+      var res=JSON.parse(JSON.stringify(M.salaries));
+      return (d&&d2)?res.filter(function(s){return Number(s.Month)===Number(d)&&Number(s.Year)===Number(d2);}):res;
+    }
+    case 'addSalary': {
+      var id=pid('SAL','sal'); var net=Number(d.BasicSalary||0)+Number(d.Allowances||0)-Number(d.Deductions||0);
+      M.salaries.push(Object.assign({SalID:id,NetSalary:net},d)); return {success:true,id:id};
+    }
+    case 'markSalaryPaid': { var s=M.salaries.find(function(s){return s.SalID===d;}); if(s){s.Paid='Yes';s.PaidDate=d2;} return {success:true}; }
+    case 'generateMonthlySalaries': { return {success:true,message:'Salaries generated (demo)'}; }
+    case 'updateSalary': { var s=M.salaries.find(function(s){return s.SalID===d.SalID;}); if(s)Object.assign(s,d); return {success:true}; }
+    case 'getInvoices': return JSON.parse(JSON.stringify(M.invoices));
+    case 'getInvoiceItems': return M.invoiceItems.filter(function(i){return i.InvID===d;});
+    case 'addInvoice': {
+      var id=pid('INV','inv'); var tot=d2.reduce(function(s,i){return s+Number(i.Total||0);},0);
+      var paid=Number(d.PaidAmount||0); var stat=paid===0?'Unpaid':(paid>=tot?'Paid':'Partial');
+      M.invoices.push({InvID:id,CustomerName:d.CustomerName,Phone:d.Phone||'',Date:d.Date||fmtDate(new Date()),TotalAmount:tot,PaidAmount:paid,Status:stat,Notes:d.Notes||''});
+      d2.forEach(function(it){M.invoiceItems.push({ItemID:pid('ITM','itm'),InvID:id,ItemName:it.ItemName,Qty:it.Qty,UnitPrice:it.UnitPrice,Total:it.Total});});
+      return {success:true,id:id,message:'Invoice '+id+' created'};
+    }
+    case 'updateInvoicePayment': {
+      var inv=M.invoices.find(function(i){return i.InvID===d;}); if(inv){inv.PaidAmount=Number(d2);inv.Status=inv.PaidAmount>=inv.TotalAmount?'Paid':(inv.PaidAmount>0?'Partial':'Unpaid');}
+      return {success:true};
+    }
+    case 'deleteInvoice': { M.invoices=M.invoices.filter(function(i){return i.InvID!==d;}); M.invoiceItems=M.invoiceItems.filter(function(i){return i.InvID!==d;}); return {success:true}; }
+    case 'getExpenses': return JSON.parse(JSON.stringify(M.expenses));
+    case 'addExpense': {
+      var id=pid('EXP','exp'); M.expenses.push(Object.assign({ExpID:id},d)); return {success:true,id:id};
+    }
+    case 'deleteExpense': { M.expenses=M.expenses.filter(function(e){return e.ExpID!==d;}); return {success:true}; }
+    case 'getAccounts': return JSON.parse(JSON.stringify(M.accounts));
+    case 'addAccount': {
+      var id=pid('ACC','acc'); M.accounts.push({AccID:id,AccountName:d.AccountName,Type:d.Type,OpeningBalance:Number(d.OpeningBalance||0)}); return {success:true,id:id};
+    }
+    case 'getJournalEntries': return JSON.parse(JSON.stringify(M.journalEntries));
+    case 'addJournalEntryManual': {
+      var id=pid('JRN','jrn'); M.journalEntries.push(Object.assign({JrnID:id},d)); return {success:true,id:id};
+    }
+    case 'getLedger': {
+      var accts=M.accounts; var entries=M.journalEntries; var acc=accts.find(function(a){return a.AccountName===d;});
+      var ob=acc?Number(acc.OpeningBalance||0):0; var bal=ob; var rows=[];
+      entries.forEach(function(e){
+        var dr=e.AccountDebit===d?Number(e.Amount||0):0; var cr=e.AccountCredit===d?Number(e.Amount||0):0;
+        if(!dr&&!cr)return; bal+=dr-cr;
+        rows.push({date:e.Date,description:e.Description,reference:e.Reference,debit:dr,credit:cr,balance:bal});
+      });
+      return {accountName:d,openingBalance:ob,entries:rows,closingBalance:bal};
+    }
+    case 'getTrialBalance': {
+      var rows=[];
+      M.accounts.forEach(function(acc){
+        var dr=0,cr=0;
+        M.journalEntries.forEach(function(e){if(e.AccountDebit===acc.AccountName)dr+=Number(e.Amount||0);if(e.AccountCredit===acc.AccountName)cr+=Number(e.Amount||0);});
+        var ob=Number(acc.OpeningBalance||0); dr+=ob>0?ob:0; cr+=ob<0?Math.abs(ob):0;
+        if(dr||cr)rows.push({AccountName:acc.AccountName,Type:acc.Type,Debit:dr,Credit:cr});
+      });
+      return {accounts:rows,totalDebit:rows.reduce(function(s,r){return s+r.Debit;},0),totalCredit:rows.reduce(function(s,r){return s+r.Credit;},0)};
+    }
+    case 'getProfitLoss': {
+      var inc={},exp={};
+      M.accounts.filter(function(a){return a.Type==='Income';}).forEach(function(a){inc[a.AccountName]=0;});
+      M.accounts.filter(function(a){return a.Type==='Expense';}).forEach(function(a){exp[a.AccountName]=0;});
+      M.journalEntries.forEach(function(e){if(inc[e.AccountCredit]!==undefined)inc[e.AccountCredit]+=Number(e.Amount||0);if(exp[e.AccountDebit]!==undefined)exp[e.AccountDebit]+=Number(e.Amount||0);});
+      var ti=Object.values(inc).reduce(function(s,v){return s+v;},0);
+      var te=Object.values(exp).reduce(function(s,v){return s+v;},0);
+      return {totalIncome:ti,totalExpenses:te,netProfit:ti-te,incomeBreakdown:inc,expenseBreakdown:exp};
+    }
+    case 'getMonthlyReport': return {month:d,year:d2,totalSalaryExpense:0,totalIncome:0,totalExpenses:0,netProfit:0,attendanceSummary:{total:0,present:0,absent:0,late:0},invoiceCount:0,salaryRecords:[]};
+    case 'getInventory': return JSON.parse(JSON.stringify(M.inventory));
+    case 'addInventoryItem': {
+      var id=pid('INVT','invt'); var r=Number(d.StockIn||0)-Number(d.StockOut||0);
+      M.inventory.push(Object.assign({InvtID:id,Remaining:r},d)); return {success:true,id:id};
+    }
+    case 'updateInventoryStock': {
+      var it=M.inventory.find(function(i){return i.InvtID===d;}); if(it){it.StockIn+=Number(d2||0);it.StockOut+=Number(a[2]||0);it.Remaining=it.StockIn-it.StockOut;} return {success:true};
+    }
+    case 'deleteInventoryItem': { M.inventory=M.inventory.filter(function(i){return i.InvtID!==d;}); return {success:true}; }
+    case 'getUsers': return M.users.map(function(u){return {UserID:u.UserID,Username:u.Username,Role:u.Role,Name:u.Name,Status:u.Status,LastLogin:u.LastLogin||''};});
+    case 'addUser': {
+      var dup=M.users.find(function(u){return u.Username.toLowerCase()===d.Username.toLowerCase();}); if(dup)return {success:false,error:'Username already exists'};
+      var id=pid('U','usr'); M.users.push({UserID:id,Username:d.Username,PasswordHash:d.Password,Role:d.Role,Name:d.Name,Status:'Active',LastLogin:''}); return {success:true,id:id};
+    }
+    case 'updateUser': { var u=M.users.find(function(u){return u.UserID===d.UserID;}); if(u){u.Username=d.Username;if(d.Password)u.PasswordHash=d.Password;u.Role=d.Role;u.Name=d.Name;u.Status=d.Status;} return {success:true}; }
+    case 'changePassword': {
+      var u=M.users.find(function(u){return u.UserID===d;}); if(!u)return {success:false,error:'User not found'};
+      if(u.PasswordHash!==d2)return {success:false,error:'Old password incorrect'};
+      u.PasswordHash=a[2]; return {success:true,message:'Password changed'};
+    }
+    default: return {success:false,error:'Unknown function: '+fn};
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════
+function fmtDate(d){ return d.toISOString().substring(0,10); }
+function fmt(n){ return 'Rs '+Number(n||0).toLocaleString('en-PK',{minimumFractionDigits:0}); }
+function mname(m){return ['','January','February','March','April','May','June','July','August','September','October','November','December'][Number(m)]||m;}
+function badge(s){
+  var map={Active:'ok',Left:'err',Present:'ok',Absent:'err',Late:'warn','Half Day':'warn',Paid:'ok',Unpaid:'err',Partial:'warn',Yes:'ok',No:'err',Admin:'info',HR:'info',Accountant:'info',Sales:'info',Viewer:'gray',Active:'ok',Inactive:'err'};
+  return '<span class="badge b-'+(map[s]||'gray')+'">'+s+'</span>';
+}
+function toast(msg,type,dur){
+  var t=document.createElement('div'); t.className='ti '+(type||'i'); t.textContent=msg;
+  document.getElementById('toast').appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){t.remove();},350);},(dur||3000));
+}
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+function toggleSB(){ document.getElementById('sidebar').classList.toggle('open'); }
+function togglePw(id,btn){
+  var el=document.getElementById(id); el.type=el.type==='password'?'text':'password'; btn.textContent=el.type==='password'?'👁':'🙈';
+}
+
+// Close modal on backdrop click
+document.addEventListener('click',function(e){ if(e.target.classList.contains('mo'))e.target.classList.remove('open'); });
+
+// ════════════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════════════
+function doLogin(){
+  var u=document.getElementById('lUser').value.trim();
+  var p=document.getElementById('lPass').value;
+  if(!u||!p){alertIn('lAlert','Username aur password dono zaroori hain','err');return;}
+  var btn=document.getElementById('lBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Logging in...';
+  gs('loginUser',[u,p],function(r){
+    btn.disabled=false; btn.innerHTML='🔐 Login';
+    if(r&&r.success){ CU=r.user; try{sessionStorage.setItem('cms_user',JSON.stringify(CU));}catch(e){} showApp(); }
+    else{ alertIn('lAlert',r&&r.error||'Invalid credentials','err'); }
+  });
+}
+
+function showApp(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sbAv').textContent=(CU.Name||'U')[0].toUpperCase();
+  document.getElementById('sbName').textContent=CU.Name;
+  document.getElementById('sbRole').textContent=CU.Role;
+  loadDash(); loadEmp(); loadAccts();
+  addIRow();
+}
+
+function doLogout(){
+  CU=null; try{sessionStorage.removeItem('cms_user');}catch(e){}
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('lPass').value='';
+}
+
+function doCPW(){
+  var old=document.getElementById('pwOld').value;
+  var nw=document.getElementById('pwNew').value;
+  var con=document.getElementById('pwCon').value;
+  if(!old||!nw){alertIn('pwAlert','Sab fields zaroori hain','err');return;}
+  if(nw!==con){alertIn('pwAlert','New password match nahi kar raha','err');return;}
+  if(nw.length<4){alertIn('pwAlert','Password kam az kam 4 characters ka hona chahiye','err');return;}
+  gs('changePassword',[CU.UserID,old,nw],function(r){
+    if(r&&r.success){closeM('pwModal');toast('Password change ho gaya!','s');['pwOld','pwNew','pwCon'].forEach(function(id){document.getElementById(id).value='';});}
+    else{alertIn('pwAlert',r&&r.error||'Error','err');}
+  });
+}
+
+function alertIn(id,msg,type){
+  document.getElementById(id).innerHTML='<div class="alert al-'+type+'">'+msg+'</div>';
+  setTimeout(function(){document.getElementById(id).innerHTML='';},4000);
+}
+
+// ════════════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════════════
+var TITLES={dashboard:'Dashboard',employees:'Employee Management',attendance:'Attendance',salary:'Salary Management',invoices:'Invoice / Sales',expenses:'Expenses',accounts:'Chart of Accounts',journal:'Journal Entries',reports:'Financial Reports',inventory:'Inventory',users:'User Management'};
+var curPage='dashboard';
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('page-'+page).classList.add('active');
+  var ni=document.querySelector('.ni[data-p="'+page+'"]');
+  if(ni)ni.classList.add('active');
+  document.getElementById('pgTitle').textContent=TITLES[page]||page;
+  curPage=page;
+  // Close sidebar on mobile
+  if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('open');
+  // Load data
+  var loaders={dashboard:loadDash,employees:loadEmp,attendance:function(){attView('mark');},salary:loadSal,invoices:loadInv,expenses:loadExp,accounts:loadAccts,journal:loadJrn,inventory:loadInvt,users:loadUsers};
+  if(loaders[page])loaders[page]();
+}
+
+function refreshCurrentPage(){ nav(curPage); toast('Data refresh ho gaya','i',1500); }
+
+// ════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════
+function loadDash(){
+  gs('getDashboardStats',[],function(d){
+    if(!d||d.error){toast(d&&d.error||'Dashboard load error','e');return;}
+    var set=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+    set('d-te',d.totalEmployees);
+    set('d-ae',d.activeEmployees);
+    set('d-pt',d.presentToday);
+    document.getElementById('d-at').textContent='Absent: '+d.absentToday+' | Late: '+d.lateToday;
+    set('d-ms',fmt(d.monthlySalary));
+    set('d-ti',fmt(d.totalIncome));
+    set('d-te2',fmt(d.totalExpenses));
+    var npEl=document.getElementById('d-np');
+    npEl.textContent=fmt(d.netProfit);
+    npEl.className='val '+(d.netProfit>=0?'green':'red');
+    set('d-pi',fmt(d.pendingInvoice));
+
+    var ri=document.getElementById('dInv');
+    if(d.recentInvoices&&d.recentInvoices.length){
+      ri.innerHTML='<table style="width:100%;font-size:12px"><tr><th style="padding:4px 2px;text-align:left;color:var(--muted)">Customer</th><th>Amount</th><th>Status</th></tr>'+
+        d.recentInvoices.map(function(i){return '<tr><td style="padding:4px 2px">'+i.CustomerName+'</td><td>'+fmt(i.TotalAmount)+'</td><td>'+badge(i.Status)+'</td></tr>';}).join('')+'</table>';
+    } else { ri.innerHTML='<div style="color:var(--muted);font-size:12px;padding:16px 0;text-align:center">Invoice nahi hai</div>'; }
+
+    var re=document.getElementById('dExp');
+    if(d.recentExpenses&&d.recentExpenses.length){
+      re.innerHTML='<table style="width:100%;font-size:12px"><tr><th style="padding:4px 2px;text-align:left;color:var(--muted)">Category</th><th>Amount</th><th>Date</th></tr>'+
+        d.recentExpenses.map(function(e){return '<tr><td style="padding:4px 2px">'+e.Category+'</td><td>'+fmt(e.Amount)+'</td><td>'+String(e.Date||'').substring(0,10)+'</td></tr>';}).join('')+'</table>';
+    } else { re.innerHTML='<div style="color:var(--muted);font-size:12px;padding:16px 0;text-align:center">Expense nahi hai</div>'; }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  EMPLOYEES
+// ════════════════════════════════════════════════════════
+function loadEmp(){
+  gs('getEmployees',[],function(data){
+    EMP=data||[];
+    var depts=[...new Set(EMP.map(function(e){return e.Department;}).filter(Boolean))];
+    var df=document.getElementById('empDf');
+    df.innerHTML='<option value="">All Departments</option>'+depts.map(function(d){return '<option>'+d+'</option>';}).join('');
+    renderEmp(EMP);
+  });
+}
+
+function filterEmp(){
+  var q=document.getElementById('empSrch').value.toLowerCase();
+  var dept=document.getElementById('empDf').value;
+  var stat=document.getElementById('empSf').value;
+  renderEmp(EMP.filter(function(e){
+    return(!q||(e.Name||'').toLowerCase().includes(q)||(e.CNIC||'').includes(q)||(e.Phone||'').includes(q))&&
+           (!dept||e.Department===dept)&&(!stat||e.Status===stat);
+  }));
+}
+
+function renderEmp(data){
+  var tb=document.getElementById('empTbl');
+  if(!data.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><div class="ei">👨‍💼</div><p>Koi employee nahi mila</p></div></td></tr>';return;}
+  tb.innerHTML=data.map(function(e){
+    return '<tr><td><strong style="color:var(--pr)">'+e.EmpID+'</strong></td><td>'+e.Name+'</td><td>'+e.Department+'</td><td>'+e.Designation+'</td><td>'+e.Phone+'</td><td><strong>'+fmt(e.BasicSalary)+'</strong></td><td>'+String(e.JoiningDate||'').substring(0,10)+'</td><td>'+badge(e.Status)+'</td><td style="white-space:nowrap">'+
+      '<button class="btn bo bsm" onclick="editEmp(\''+e.EmpID+'\')">✏️</button> '+
+      '<button class="btn bo bsm" onclick="printEmpCard(\''+e.EmpID+'\')">🖨️</button> '+
+      '<button class="btn bd bsm" onclick="delEmp(\''+e.EmpID+'\')">🗑️</button>'+
+      '</td></tr>';
+  }).join('');
+}
+
+function saveEmp(){
+  var id=document.getElementById('eID').value;
+  var d={EmpID:id,Name:document.getElementById('eName').value.trim(),FatherName:document.getElementById('eFN').value.trim(),CNIC:document.getElementById('eCNIC').value.trim(),Phone:document.getElementById('ePh').value.trim(),Address:document.getElementById('eAddr').value.trim(),Department:document.getElementById('eDept').value,Designation:document.getElementById('eDesig').value.trim(),JoiningDate:document.getElementById('eJoin').value,BasicSalary:document.getElementById('eSal').value,Status:document.getElementById('eStat').value};
+  if(!d.Name||!d.Phone){toast('Naam aur phone zaroori hain','e');return;}
+  var btn=document.getElementById('saveEmpBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+  gs(id?'updateEmployee':'addEmployee',[d],function(r){
+    btn.disabled=false;btn.innerHTML='💾 Save';
+    if(r&&r.success){closeM('empModal');toast(r.message||'Employee saved!','s');loadEmp();resetEmpForm();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function editEmp(id){
+  var e=EMP.find(function(e){return e.EmpID===id;});if(!e)return;
+  document.getElementById('empMT').textContent='Edit Employee';
+  document.getElementById('eID').value=e.EmpID;
+  document.getElementById('eName').value=e.Name;
+  document.getElementById('eFN').value=e.FatherName||'';
+  document.getElementById('eCNIC').value=e.CNIC||'';
+  document.getElementById('ePh').value=e.Phone||'';
+  document.getElementById('eAddr').value=e.Address||'';
+  document.getElementById('eDept').value=e.Department||'HR';
+  document.getElementById('eDesig').value=e.Designation||'';
+  document.getElementById('eJoin').value=String(e.JoiningDate||'').substring(0,10);
+  document.getElementById('eSal').value=e.BasicSalary||0;
+  document.getElementById('eStat').value=e.Status||'Active';
+  openM('empModal');
+}
+
+function delEmp(id){
+  if(!confirm('Yeh employee delete karna chahte ho?'))return;
+  gs('deleteEmployee',[id],function(r){
+    if(r&&r.success){toast('Employee delete ho gaya','s');loadEmp();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function resetEmpForm(){
+  document.getElementById('eID').value='';
+  document.getElementById('empMT').textContent='Add Employee';
+  ['eName','eFN','eCNIC','ePh','eAddr','eDesig'].forEach(function(i){document.getElementById(i).value='';});
+  document.getElementById('eSal').value='';
+  document.getElementById('eDept').value='HR';
+  document.getElementById('eStat').value='Active';
+  document.getElementById('eJoin').value=fmtDate(new Date());
+}
+
+// ════════════════════════════════════════════════════════
+//  ATTENDANCE — FIXED
+// ════════════════════════════════════════════════════════
+function attView(mode){
+  document.getElementById('attMarkArea').style.display=mode==='mark'?'block':'none';
+  document.getElementById('attViewArea').style.display=mode==='view'?'block':'none';
+  if(mode==='view'){document.getElementById('attVDate').value=fmtDate(new Date());loadAttView();}
+}
+
+function loadAttCards(){
+  var date=document.getElementById('attDate').value;
+  if(!date){toast('Pehle date select karo','e');return;}
+  var active=EMP.filter(function(e){return e.Status==='Active';});
+  if(!active.length){
+    document.getElementById('attCards').innerHTML='<div class="empty"><div class="ei">👨‍💼</div><p>Koi active employee nahi. Pehle employee add karo.</p></div>';
+    return;
+  }
+  // Load existing attendance for this date
+  gs('getAttendance',[date],function(existing){
+    attMap={};
+    var exMap={};
+    (existing||[]).forEach(function(a){exMap[String(a.EmpID)]=a;});
+    active.forEach(function(emp){
+      var ex=exMap[String(emp.EmpID)];
+      attMap[String(emp.EmpID)]={EmpID:emp.EmpID,EmpName:emp.Name,Date:date,CheckIn:ex?ex.CheckIn:'',CheckOut:ex?ex.CheckOut:'',Status:ex?ex.Status:'',AttID:ex?ex.AttID:''};
+    });
+    renderAttCards(active,date);
+    document.getElementById('saveAttBtn').style.display='inline-flex';
+    document.getElementById('attSummaryBar').style.display='flex';
+    updateAttCount();
+  });
+}
+
+function renderAttCards(active,date){
+  document.getElementById('attCards').innerHTML=active.map(function(emp){
+    var rec=attMap[String(emp.EmpID)]||{};
+    var stat=rec.Status||'';
+    return '<div class="att-card" id="ac-'+emp.EmpID+'">'+
+      '<div style="width:36px;height:36px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">'+emp.Name[0]+'</div>'+
+      '<div class="att-emp"><div class="name">'+emp.Name+'</div><div class="dept">'+emp.EmpID+' · '+emp.Department+'</div></div>'+
+      '<div class="att-btns">'+
+        '<button class="ab P'+(stat==='Present'?' on':'')+'" onclick="setAtt(\''+emp.EmpID+'\',\'Present\')">✅</button>'+
+        '<button class="ab A'+(stat==='Absent'?' on':'')+'"  onclick="setAtt(\''+emp.EmpID+'\',\'Absent\')">❌</button>'+
+        '<button class="ab L'+(stat==='Late'?' on':'')+'"    onclick="setAtt(\''+emp.EmpID+'\',\'Late\')">⏰</button>'+
+        '<button class="ab H'+(stat==='Half Day'?' on':'')+'" onclick="setAtt(\''+emp.EmpID+'\',\'Half Day\')">½</button>'+
+      '</div></div>';
+  }).join('');
+}
+
+function setAtt(empID,status){
+  if(!attMap[String(empID)])return;
+  attMap[String(empID)].Status=status;
+  // Update UI buttons
+  var card=document.getElementById('ac-'+empID);
+  if(!card)return;
+  card.querySelectorAll('.ab').forEach(function(btn){btn.classList.remove('on');});
+  var map={Present:'P',Absent:'A',Late:'L','Half Day':'H'};
+  var cls=map[status];
+  var btn=card.querySelector('.ab.'+cls);
+  if(btn)btn.classList.add('on');
+  updateAttCount();
+}
+
+function updateAttCount(){
+  var vals=Object.values(attMap);
+  document.getElementById('cntP').textContent=vals.filter(function(v){return v.Status==='Present';}).length;
+  document.getElementById('cntA').textContent=vals.filter(function(v){return v.Status==='Absent';}).length;
+  document.getElementById('cntL').textContent=vals.filter(function(v){return v.Status==='Late';}).length;
+  document.getElementById('cntT').textContent=vals.filter(function(v){return !!v.Status;}).length;
+}
+
+function saveAllAtt(){
+  var records=Object.values(attMap);
+  var toSave=records.filter(function(r){return !!r.Status;});
+  if(!toSave.length){toast('Koi bhi attendance mark nahi ki','e');return;}
+  var btn=document.getElementById('saveAttBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Saving...';
+  gs('upsertAttendance',[toSave],function(r){
+    btn.disabled=false;btn.innerHTML='💾 Save All';
+    if(r&&r.success){toast(r.message,'s');loadDash();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function loadAttView(){
+  var date=document.getElementById('attVDate').value;
+  var statF=document.getElementById('attVStat').value;
+  var empF=document.getElementById('attVEmp').value.toLowerCase();
+  gs('getAttendance',[date||null],function(data){
+    var d=(data||[]).filter(function(a){
+      return(!statF||a.Status===statF)&&(!empF||(a.EmpName||'').toLowerCase().includes(empF));
+    });
+    var tb=document.getElementById('attTbl');
+    if(!d.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Koi record nahi</td></tr>';return;}
+    tb.innerHTML=d.map(function(a){
+      return '<tr><td>'+a.AttID+'</td><td>'+String(a.Date||'').substring(0,10)+'</td><td><strong>'+a.EmpName+'</strong></td><td>'+a.CheckIn+'</td><td>'+a.CheckOut+'</td><td>'+badge(a.Status)+'</td><td>'+
+        '<button class="btn bo bsm" onclick="openAttUpd(\''+a.AttID+'\',\''+a.CheckIn+'\',\''+a.CheckOut+'\',\''+a.Status+'\')">✏️</button></td></tr>';
+    }).join('');
+  });
+}
+
+function openAttUpd(id,ci,co,stat){
+  document.getElementById('auID').value=id;
+  document.getElementById('auCI').value=ci;
+  document.getElementById('auCO').value=co;
+  document.getElementById('auStat').value=stat;
+  openM('attUpdModal');
+}
+
+function saveAttUpd(){
+  var d={AttID:document.getElementById('auID').value,CheckIn:document.getElementById('auCI').value,CheckOut:document.getElementById('auCO').value,Status:document.getElementById('auStat').value};
+  gs('updateAttendance',[d],function(r){
+    if(r&&r.success){closeM('attUpdModal');toast('Updated!','s');loadAttView();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  SALARY
+// ════════════════════════════════════════════════════════
+function loadSal(){
+  var m=document.getElementById('salMo').value;
+  var y=document.getElementById('salYr').value;
+  var pf=document.getElementById('salPF').value;
+  gs('getSalaries',[m||null,y||null],function(data){
+    var d=(data||[]).filter(function(s){return !pf||s.Paid===pf;});
+    var tb=document.getElementById('salTbl');
+    if(!d.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Koi record nahi</td></tr>';document.getElementById('salSum').style.display='none';return;}
+    tb.innerHTML=d.map(function(s){
+      return '<tr><td>'+s.SalID+'</td><td><strong>'+s.EmpName+'</strong></td><td>'+mname(s.Month)+' '+s.Year+'</td><td>'+fmt(s.BasicSalary)+'</td><td style="color:var(--ok)">+'+fmt(s.Allowances)+'</td><td style="color:var(--err)">-'+fmt(s.Deductions)+'</td><td><strong>'+fmt(s.NetSalary)+'</strong></td><td>'+badge(s.Paid==='Yes'?'Paid':'Unpaid')+'</td><td style="white-space:nowrap">'+
+        (s.Paid!=='Yes'?'<button class="btn bs bsm" onclick="openPaySal(\''+s.SalID+'\',\''+s.EmpName+'\','+s.NetSalary+')">✅ Pay</button> ':badge('Paid')+' ')+
+        '</td></tr>';
+    }).join('');
+    var tot=d.reduce(function(s,r){return s+Number(r.NetSalary||0);},0);
+    var paid=d.filter(function(s){return s.Paid==='Yes';}).reduce(function(s,r){return s+Number(r.NetSalary||0);},0);
+    document.getElementById('sTot').textContent=fmt(tot);
+    document.getElementById('sPaid').textContent=fmt(paid);
+    document.getElementById('sRem').textContent=fmt(tot-paid);
+    document.getElementById('sCnt').textContent=d.length;
+    document.getElementById('salSum').style.display='block';
+  });
+}
+
+function populateEmpSel(){
+  var sel=document.getElementById('smEmp');
+  sel.innerHTML='<option value="">Select Employee</option>'+EMP.filter(function(e){return e.Status==='Active';}).map(function(e){return '<option value="'+e.EmpID+'" data-sal="'+e.BasicSalary+'">'+e.EmpID+' — '+e.Name+'</option>';}).join('');
+}
+
+function fillSalEmp(){
+  var sel=document.getElementById('smEmp');
+  var opt=sel.options[sel.selectedIndex];
+  var sal=opt?opt.getAttribute('data-sal'):'0';
+  document.getElementById('smBase').value=sal||0;
+  calcNet();
+}
+
+function calcNet(){
+  var b=Number(document.getElementById('smBase').value||0);
+  var a=Number(document.getElementById('smAlw').value||0);
+  var d=Number(document.getElementById('smDed').value||0);
+  document.getElementById('smNet').value=b+a-d;
+}
+
+function saveSalMan(){
+  var sel=document.getElementById('smEmp');
+  var empID=sel.value; var empName=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text.split('—')[1].trim():'';
+  if(!empID){toast('Employee select karo','e');return;}
+  gs('addSalary',[{EmpID:empID,EmpName:empName,Month:document.getElementById('smMo').value,Year:document.getElementById('smYr').value,BasicSalary:document.getElementById('smBase').value,Allowances:document.getElementById('smAlw').value,Deductions:document.getElementById('smDed').value,Paid:document.getElementById('smPaid').value,Remarks:document.getElementById('smRem').value}],function(r){
+    if(r&&r.success){closeM('salManModal');toast('Salary record add ho gaya','s');loadSal();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function genSal(){
+  gs('generateMonthlySalaries',[document.getElementById('gnMo').value,document.getElementById('gnYr').value],function(r){
+    if(r&&r.success){closeM('genSalModal');toast(r.message,'s');
+      document.getElementById('salMo').value=document.getElementById('gnMo').value;
+      document.getElementById('salYr').value=document.getElementById('gnYr').value;
+      loadSal();
+    } else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function openPaySal(id,name,amt){
+  document.getElementById('psSID').value=id;
+  document.getElementById('psInfo').innerHTML='<strong>'+name+'</strong> ko pay karna hai — Net Salary: <strong>'+fmt(amt)+'</strong>';
+  document.getElementById('psDt').value=fmtDate(new Date());
+  openM('paySalModal');
+}
+
+function confirmPaySal(){
+  gs('markSalaryPaid',[document.getElementById('psSID').value,document.getElementById('psDt').value],function(r){
+    if(r&&r.success){closeM('paySalModal');toast('Salary paid mark ho gaya!','s');loadSal();loadDash();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  INVOICES
+// ════════════════════════════════════════════════════════
+function loadInv(){
+  gs('getInvoices',[],function(data){
+    INV=data||[];renderInv(INV);
+  });
+}
+
+function filterInv(){
+  var q=document.getElementById('invSrch').value.toLowerCase();
+  var sf=document.getElementById('invSF').value;
+  var df=document.getElementById('invDF').value;
+  renderInv(INV.filter(function(i){
+    return(!q||(i.CustomerName||'').toLowerCase().includes(q))&&(!sf||i.Status===sf)&&(!df||String(i.Date||'').substring(0,10)===df);
+  }));
+}
+
+function renderInv(data){
+  var tb=document.getElementById('invTbl');
+  if(!data.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">🧾</div><p>Koi invoice nahi</p></div></td></tr>';return;}
+  tb.innerHTML=data.map(function(i){
+    var bal=Number(i.TotalAmount||0)-Number(i.PaidAmount||0);
+    return '<tr><td><strong style="color:var(--pr)">'+i.InvID+'</strong></td><td>'+i.CustomerName+'</td><td>'+String(i.Date||'').substring(0,10)+'</td><td>'+fmt(i.TotalAmount)+'</td><td style="color:var(--ok)">'+fmt(i.PaidAmount)+'</td><td style="color:var(--err)">'+fmt(bal)+'</td><td>'+badge(i.Status)+'</td><td style="white-space:nowrap">'+
+      '<button class="btn bo bsm" onclick="viewInv(\''+i.InvID+'\')">👁️</button> '+
+      (i.Status!=='Paid'?'<button class="btn bs bsm" onclick="openPayInv(\''+i.InvID+'\',\''+i.CustomerName+'\','+i.TotalAmount+','+i.PaidAmount+')">💳</button> ':'')+
+      '<button class="btn bd bsm" onclick="delInv(\''+i.InvID+'\')">🗑️</button>'+
+      '</td></tr>';
+  }).join('');
+}
+
+function addIRow(){
+  var c=document.getElementById('iItems');
+  var div=document.createElement('div'); div.className='irow';
+  div.innerHTML='<input type="text" placeholder="Item / Service naam" oninput="calcInvT()">'+
+    '<input type="number" value="1" min="1" oninput="calcInvT()">'+
+    '<input type="number" value="0" min="0" oninput="calcInvT()">'+
+    '<input type="number" value="0" readonly style="background:#f8f9fa">'+
+    '<button onclick="this.parentElement.remove();calcInvT()" style="border:none;background:var(--err);color:#fff;border-radius:4px;cursor:pointer;font-size:12px;width:28px;height:28px">✕</button>';
+  c.appendChild(div); calcInvT();
+}
+
+function calcInvT(){
+  var rows=document.querySelectorAll('#iItems .irow'); var tot=0;
+  rows.forEach(function(r){
+    var inp=r.querySelectorAll('input'); var q=Number(inp[1].value||1); var p=Number(inp[2].value||0); var rt=q*p; inp[3].value=rt; tot+=rt;
+  });
+  document.getElementById('iGT').textContent=fmt(tot); calcInvBal();
+}
+
+function calcInvBal(){
+  var totTxt=document.getElementById('iGT').textContent.replace('Rs ','').replace(/,/g,'');
+  var tot=Number(totTxt||0); var paid=Number(document.getElementById('ipaid').value||0);
+  document.getElementById('iBal').textContent=fmt(Math.max(0,tot-paid));
+}
+
+function saveInv(){
+  var cust=document.getElementById('icust').value.trim();
+  if(!cust){toast('Customer naam zaroori hai','e');return;}
+  var rows=document.querySelectorAll('#iItems .irow'); var items=[];
+  rows.forEach(function(r){
+    var inp=r.querySelectorAll('input'); var nm=inp[0].value.trim();
+    if(nm)items.push({ItemName:nm,Qty:Number(inp[1].value||1),UnitPrice:Number(inp[2].value||0),Total:Number(inp[3].value||0)});
+  });
+  if(!items.length){toast('Kam az kam ek item add karo','e');return;}
+  var d={CustomerName:cust,Phone:document.getElementById('iph').value,Date:document.getElementById('idate').value,PaidAmount:document.getElementById('ipaid').value,Notes:document.getElementById('inotes').value};
+  gs('addInvoice',[d,items],function(r){
+    if(r&&r.success){closeM('invModal');toast(r.message,'s');loadInv();loadDash();resetInvForm();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function resetInvForm(){
+  ['icust','iph','inotes'].forEach(function(i){document.getElementById(i).value='';});
+  document.getElementById('ipaid').value='0'; document.getElementById('idate').value=fmtDate(new Date());
+  document.getElementById('iItems').innerHTML=''; addIRow();
+  document.getElementById('iGT').textContent='Rs 0'; document.getElementById('iBal').textContent='Rs 0';
+}
+
+function viewInv(id){
+  var inv=INV.find(function(i){return i.InvID===id;});if(!inv)return;
+  gs('getInvoiceItems',[id],function(items){
+    var bal=Number(inv.TotalAmount||0)-Number(inv.PaidAmount||0);
+    var html='<div style="margin-bottom:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">'+
+      '<div><div style="font-size:10px;color:var(--muted)">INVOICE NO</div><div style="font-size:22px;font-weight:700;color:var(--pr)">'+inv.InvID+'</div></div>'+
+      '<div><div style="font-size:10px;color:var(--muted)">STATUS</div>'+badge(inv.Status)+'</div></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;font-size:13px">'+
+      '<div><div style="font-size:10px;color:var(--muted)">CUSTOMER</div><div style="font-weight:600">'+inv.CustomerName+'</div><div style="color:var(--muted)">'+inv.Phone+'</div></div>'+
+      '<div><div style="font-size:10px;color:var(--muted)">DATE</div><div>'+String(inv.Date||'').substring(0,10)+'</div></div></div>'+
+      '<div class="tw"><table><thead><tr><th>Item / Service</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>'+
+      (items||[]).map(function(it){return '<tr><td>'+it.ItemName+'</td><td>'+it.Qty+'</td><td>'+fmt(it.UnitPrice)+'</td><td><strong>'+fmt(it.Total)+'</strong></td></tr>';}).join('')+
+      '</tbody></table></div>'+
+      '<div style="background:#f8f9fa;padding:14px;border-radius:8px;margin-top:14px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px"><span>Grand Total</span><strong>'+fmt(inv.TotalAmount)+'</strong></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:var(--ok);font-size:13px"><span>Amount Paid</span><strong>'+fmt(inv.PaidAmount)+'</strong></div>'+
+      '<div style="display:flex;justify-content:space-between;color:var(--err);font-weight:700;font-size:15px;border-top:1px solid var(--brd);padding-top:8px"><span>Balance Due</span><strong>'+fmt(bal)+'</strong></div></div>'+
+      (inv.Notes?'<p style="margin-top:10px;font-size:12px;color:var(--muted)">Note: '+inv.Notes+'</p>':'');
+    document.getElementById('invDtlContent').innerHTML=html;
+    document.getElementById('invDtlContent').dataset.invID=id;
+    openM('invDetailModal');
+  });
+}
+
+var _printInvID='';
+function printInvoice(){
+  var id=document.getElementById('invDtlContent').dataset.invID;
+  var inv=INV.find(function(i){return i.InvID===id;});if(!inv)return;
+  gs('getInvoiceItems',[id],function(items){
+    var win=window.open('','_blank');
+    var bal=Number(inv.TotalAmount||0)-Number(inv.PaidAmount||0);
+    var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Invoice '+inv.InvID+'</title>'+
+      '<style>body{font-family:Arial,sans-serif;padding:30px;color:#222}h2{color:#1a73e8}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}th{background:#f1f3f4;font-size:12px}tfoot td{font-weight:700}.tot{text-align:right;font-size:18px;font-weight:700}.bal{color:#d93025}.paid{color:#1e8e3e}.hdr{display:flex;justify-content:space-between;margin-bottom:24px;align-items:flex-start}.box{background:#f8f9fa;padding:12px;border-radius:6px;margin-top:12px}@media print{body{padding:10px}}</style></head><body>'+
+      '<div class="hdr"><div><h2>🧾 INVOICE</h2><div style="font-size:22px;font-weight:700;color:#1a73e8">'+inv.InvID+'</div></div>'+
+      '<div style="text-align:right"><div style="font-size:11px;color:#666">DATE</div><div>'+String(inv.Date||'').substring(0,10)+'</div><br>'+
+      '<div style="background:'+(inv.Status==='Paid'?'#e6f4ea':'#fce8e6')+';padding:4px 12px;border-radius:10px;font-size:12px;font-weight:600;color:'+(inv.Status==='Paid'?'#1e8e3e':'#d93025')+'">'+inv.Status+'</div></div></div>'+
+      '<div style="margin-bottom:16px"><strong>Customer:</strong> '+inv.CustomerName+(inv.Phone?' | '+inv.Phone:'')+'</div>'+
+      '<table><thead><tr><th>#</th><th>Item / Service</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>'+
+      (items||[]).map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+it.ItemName+'</td><td>'+it.Qty+'</td><td>'+fmt(it.UnitPrice)+'</td><td>'+fmt(it.Total)+'</td></tr>';}).join('')+
+      '</tbody></table>'+
+      '<div class="box"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Grand Total</span><span class="tot">'+fmt(inv.TotalAmount)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="paid">Amount Paid</span><span class="paid tot">'+fmt(inv.PaidAmount)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;border-top:2px solid #333;padding-top:8px"><span class="bal">Balance Due</span><span class="bal tot">'+fmt(bal)+'</span></div></div>'+
+      (inv.Notes?'<p style="margin-top:12px;font-size:12px;color:#666">Note: '+inv.Notes+'</p>':'')+
+      '<script>window.onload=function(){window.print();}<\/script></body></html>';
+    win.document.write(html); win.document.close();
+  });
+}
+
+function openPayInv(id,cust,tot,paid){
+  document.getElementById('piID').value=id;
+  document.getElementById('piInfo').innerHTML='<strong>'+cust+'</strong> — Total: <strong>'+fmt(tot)+'</strong>, Current Paid: <strong>'+fmt(paid)+'</strong>';
+  document.getElementById('piAmt').value=paid;
+  openM('payInvModal');
+}
+
+function confirmPayInv(){
+  gs('updateInvoicePayment',[document.getElementById('piID').value,document.getElementById('piAmt').value],function(r){
+    if(r&&r.success){closeM('payInvModal');toast('Payment update ho gaya!','s');loadInv();loadDash();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function delInv(id){
+  if(!confirm('Invoice delete karna chahte ho?'))return;
+  gs('deleteInvoice',[id],function(r){
+    if(r&&r.success){toast('Invoice delete ho gaya','s');loadInv();loadDash();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  EXPENSES
+// ════════════════════════════════════════════════════════
+function loadExp(){
+  gs('getExpenses',[],function(data){
+    EXP=data||[];
+    var cats=[...new Set(EXP.map(function(e){return e.Category;}).filter(Boolean))];
+    var cf=document.getElementById('expCF');
+    cf.innerHTML='<option value="">All Categories</option>'+cats.map(function(c){return '<option>'+c+'</option>';}).join('');
+    renderExp(EXP);
+  });
+}
+
+function filterExp(){
+  var cat=document.getElementById('expCF').value;
+  var df=document.getElementById('expDF').value;
+  var dt=document.getElementById('expDT').value;
+  renderExp(EXP.filter(function(e){
+    var d=String(e.Date||'').substring(0,10);
+    return(!cat||e.Category===cat)&&(!df||d>=df)&&(!dt||d<=dt);
+  }));
+}
+
+function renderExp(data){
+  var tb=document.getElementById('expTbl');
+  if(!data.length){tb.innerHTML='<tr><td colspan="6"><div class="empty"><div class="ei">📉</div><p>Koi expense nahi</p></div></td></tr>';document.getElementById('expSum').innerHTML='';return;}
+  tb.innerHTML=data.map(function(e){
+    return '<tr><td>'+e.ExpID+'</td><td>'+String(e.Date||'').substring(0,10)+'</td><td><span class="badge b-info">'+e.Category+'</span></td><td><strong>'+fmt(e.Amount)+'</strong></td><td>'+e.Description+'</td><td>'+
+      '<button class="btn bd bsm" onclick="delExp(\''+e.ExpID+'\')">🗑️</button></td></tr>';
+  }).join('');
+  var tot=data.reduce(function(s,e){return s+Number(e.Amount||0);},0);
+  document.getElementById('expSum').innerHTML='<div class="card" style="display:inline-flex;gap:8px;align-items:center;font-size:13px">Total Expenses: <strong style="color:var(--err);font-size:16px">'+fmt(tot)+'</strong></div>';
+}
+
+function saveExp(){
+  var amt=document.getElementById('exAmt').value;
+  if(!amt||Number(amt)<=0){toast('Amount dalein','e');return;}
+  gs('addExpense',[{Date:document.getElementById('exDt').value,Category:document.getElementById('exCat').value,Amount:amt,Description:document.getElementById('exDesc').value,Reference:document.getElementById('exRef').value}],function(r){
+    if(r&&r.success){closeM('expModal');toast('Expense add ho gaya!','s');loadExp();loadDash();
+      document.getElementById('exAmt').value=''; document.getElementById('exDesc').value=''; document.getElementById('exRef').value='';
+    } else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function delExp(id){
+  if(!confirm('Expense delete karna chahte ho?'))return;
+  gs('deleteExpense',[id],function(r){
+    if(r&&r.success){toast('Deleted','s');loadExp();loadDash();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  ACCOUNTS
+// ════════════════════════════════════════════════════════
+function loadAccts(){
+  gs('getAccounts',[],function(data){
+    ACCTS=data||[];
+    var tb=document.getElementById('accTbl');
+    if(!ACCTS.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">Koi account nahi</td></tr>';return;}
+    tb.innerHTML=ACCTS.map(function(a){
+      return '<tr><td>'+a.AccID+'</td><td><strong>'+a.AccountName+'</strong></td><td><span class="badge b-info">'+a.Type+'</span></td><td>'+fmt(a.OpeningBalance)+'</td><td>'+
+        '<button class="btn bo bsm" onclick="openLedgerFor(\''+a.AccountName+'\')">📖 Ledger</button></td></tr>';
+    }).join('');
+    // Populate journal selects
+    var opts='<option value="">Account select karo</option>'+ACCTS.map(function(a){return '<option>'+a.AccountName+'</option>';}).join('');
+    document.getElementById('jDr').innerHTML=opts;
+    document.getElementById('jCr').innerHTML=opts;
+    document.getElementById('ledAcc').innerHTML=opts;
+  });
+}
+
+function saveAcc(){
+  var nm=document.getElementById('acName').value.trim();
+  if(!nm){toast('Account naam zaroori hai','e');return;}
+  gs('addAccount',[{AccountName:nm,Type:document.getElementById('acType').value,OpeningBalance:document.getElementById('acOB').value}],function(r){
+    if(r&&r.success){closeM('accModal');toast('Account add ho gaya!','s');loadAccts();document.getElementById('acName').value='';document.getElementById('acOB').value='0';}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  JOURNAL
+// ════════════════════════════════════════════════════════
+function loadJrn(){
+  gs('getJournalEntries',[],function(data){
+    var df=document.getElementById('jrnDF').value;
+    var dt=document.getElementById('jrnDT').value;
+    var q=document.getElementById('jrnSrch').value.toLowerCase();
+    var d=(data||[]).filter(function(e){
+      var dt2=String(e.Date||'').substring(0,10);
+      return(!df||dt2>=df)&&(!dt||dt2<=dt)&&(!q||(e.Description||'').toLowerCase().includes(q)||(e.AccountDebit||'').toLowerCase().includes(q)||(e.AccountCredit||'').toLowerCase().includes(q));
+    }).reverse();
+    var tb=document.getElementById('jrnTbl');
+    if(!d.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="ei">📖</div><p>Koi entry nahi</p></div></td></tr>';return;}
+    tb.innerHTML=d.map(function(e){
+      return '<tr><td>'+e.JrnID+'</td><td>'+String(e.Date||'').substring(0,10)+'</td>'+
+        '<td style="color:var(--err)"><strong>'+e.AccountDebit+'</strong></td>'+
+        '<td style="color:var(--ok)"><strong>'+e.AccountCredit+'</strong></td>'+
+        '<td>'+fmt(e.Amount)+'</td><td>'+e.Description+'</td><td>'+e.Reference+'</td></tr>';
+    }).join('');
+  });
+}
+
+function saveJrn(){
+  var d={Date:document.getElementById('jDt').value,AccountDebit:document.getElementById('jDr').value,AccountCredit:document.getElementById('jCr').value,Amount:document.getElementById('jAmt').value,Description:document.getElementById('jDesc').value,Reference:document.getElementById('jRef').value};
+  if(!d.AccountDebit||!d.AccountCredit||!d.Amount){toast('Sab zaroori fields bharein','e');return;}
+  if(d.AccountDebit===d.AccountCredit){toast('Debit aur Credit account alag hone chahiye','e');return;}
+  gs('addJournalEntryManual',[d],function(r){
+    if(r&&r.success){closeM('jrnModal');toast('Journal entry add ho gaya!','s');loadJrn();
+      ['jAmt','jDesc','jRef'].forEach(function(i){document.getElementById(i).value='';});
+    }else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  REPORTS
+// ════════════════════════════════════════════════════════
+function showRpt(type){
+  if(type==='tb'){
+    gs('getTrialBalance',[],function(d){
+      var html='<div class="card"><div class="stitle" style="margin-bottom:14px">📊 Trial Balance</div>'+
+        '<div class="tw"><table><thead><tr><th>Account Name</th><th>Type</th><th style="text-align:right">Debit (Rs)</th><th style="text-align:right">Credit (Rs)</th></tr></thead><tbody>'+
+        (d.accounts||[]).map(function(a){return '<tr><td>'+a.AccountName+'</td><td><span class="badge b-info">'+a.Type+'</span></td><td style="text-align:right;color:var(--err)">'+(a.Debit?Number(a.Debit).toLocaleString():'—')+'</td><td style="text-align:right;color:var(--ok)">'+(a.Credit?Number(a.Credit).toLocaleString():'—')+'</td></tr>';}).join('')+
+        '</tbody><tfoot><tr style="background:#f8f9fa;font-weight:700"><td colspan="2">TOTAL</td><td style="text-align:right;color:var(--err)">'+Number(d.totalDebit||0).toLocaleString()+'</td><td style="text-align:right;color:var(--ok)">'+Number(d.totalCredit||0).toLocaleString()+'</td></tr></tfoot></table></div>'+
+        '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Difference: Rs '+(Math.abs((d.totalDebit||0)-(d.totalCredit||0))).toLocaleString()+(Math.abs((d.totalDebit||0)-(d.totalCredit||0))===0?' ✅ Balanced':'  ⚠️ Check entries')+'</div></div>';
+      document.getElementById('rptArea').innerHTML=html;
+    });
+  } else if(type==='pl'){
+    gs('getProfitLoss',[],function(d){
+      var irows=Object.entries(d.incomeBreakdown||{}).map(function(e){return '<div class="plr"><span>'+e[0]+'</span><span style="color:var(--ok)">'+fmt(e[1])+'</span></div>';}).join('');
+      var erows=Object.entries(d.expenseBreakdown||{}).map(function(e){return '<div class="plr"><span>'+e[0]+'</span><span style="color:var(--err)">'+fmt(e[1])+'</span></div>';}).join('');
+      var pc=Number(d.netProfit||0)>=0?'var(--ok)':'var(--err)';
+      var html='<div class="card"><div class="stitle" style="margin-bottom:14px">📈 Profit & Loss Statement</div>'+
+        '<div style="margin-bottom:20px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px">📥 INCOME</div>'+irows+'<div class="plr" style="font-weight:700;border-top:2px solid var(--brd)"><span>Total Income</span><span style="color:var(--ok)">'+fmt(d.totalIncome)+'</span></div></div>'+
+        '<div style="margin-bottom:20px"><div style="font-weight:700;color:var(--err);margin-bottom:8px">📤 EXPENSES</div>'+erows+'<div class="plr" style="font-weight:700;border-top:2px solid var(--brd)"><span>Total Expenses</span><span style="color:var(--err)">'+fmt(d.totalExpenses)+'</span></div></div>'+
+        '<div class="plt"><span>NET PROFIT / LOSS</span><span style="color:'+pc+'">'+fmt(d.netProfit)+'</span></div></div>';
+      document.getElementById('rptArea').innerHTML=html;
+    });
+  }
+}
+
+function openLedgerFor(acc){
+  document.getElementById('ledAcc').value=acc;
+  openM('ledgerModal'); loadLedger();
+}
+
+function loadLedger(){
+  var acc=document.getElementById('ledAcc').value;
+  if(!acc){toast('Account select karo','e');return;}
+  gs('getLedger',[acc],function(d){
+    var html='<div class="tw"><table><thead><tr><th>Date</th><th>Description</th><th>Ref</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th style="text-align:right">Balance</th></tr></thead><tbody>';
+    if(!d.entries||!d.entries.length){html+='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Koi transaction nahi</td></tr>';}
+    else{d.entries.forEach(function(e){html+='<tr><td>'+String(e.date||'').substring(0,10)+'</td><td>'+e.description+'</td><td style="color:var(--muted)">'+e.reference+'</td><td style="text-align:right;color:var(--err)">'+(e.debit?fmt(e.debit):'—')+'</td><td style="text-align:right;color:var(--ok)">'+(e.credit?fmt(e.credit):'—')+'</td><td style="text-align:right;font-weight:600">'+fmt(e.balance)+'</td></tr>';});}
+    html+='</tbody></table></div><div class="led-bal"><span>Opening Balance: '+fmt(d.openingBalance)+'</span><span>Closing Balance: <strong>'+fmt(d.closingBalance)+'</strong></span></div>';
+    document.getElementById('ledContent').innerHTML=html;
+  });
+}
+
+function loadMR(){
+  gs('getMonthlyReport',[document.getElementById('mrMo').value,document.getElementById('mrYr').value],function(d){
+    var pc=Number(d.netProfit||0)>=0?'var(--ok)':'var(--err)';
+    var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px">'+
+      '<div class="sc"><div class="lbl">Total Income</div><div class="val green">'+fmt(d.totalIncome)+'</div></div>'+
+      '<div class="sc"><div class="lbl">Salary Exp</div><div class="val red">'+fmt(d.totalSalaryExpense)+'</div></div>'+
+      '<div class="sc"><div class="lbl">Other Exp</div><div class="val red">'+fmt(d.totalExpenses)+'</div></div>'+
+      '<div class="sc"><div class="lbl">Net Profit</div><div class="val" style="color:'+pc+'">'+fmt(d.netProfit)+'</div></div>'+
+      '<div class="sc"><div class="lbl">Att Records</div><div class="val blue">'+(d.attendanceSummary?d.attendanceSummary.total:0)+'</div></div>'+
+      '<div class="sc"><div class="lbl">Invoices</div><div class="val blue">'+(d.invoiceCount||0)+'</div></div>'+
+      '</div>';
+    if(d.attendanceSummary){
+      html+='<div class="card" style="margin-bottom:14px"><div class="stitle">Attendance Summary</div><div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:13px">'+
+        '<span style="color:var(--ok);font-weight:600">✅ Present: '+d.attendanceSummary.present+'</span>'+
+        '<span style="color:var(--err);font-weight:600">❌ Absent: '+d.attendanceSummary.absent+'</span>'+
+        '<span style="color:var(--warn);font-weight:600">⏰ Late: '+d.attendanceSummary.late+'</span>'+
+        '</div></div>';
+    }
+    if(d.salaryRecords&&d.salaryRecords.length){
+      html+='<div class="card"><div class="stitle">Salary Sheet — '+mname(d.month)+' '+d.year+'</div><div class="tw" style="margin-top:10px"><table><thead><tr><th>Employee</th><th>Basic</th><th>Allowances</th><th>Deductions</th><th>Net Salary</th><th>Status</th></tr></thead><tbody>'+
+        d.salaryRecords.map(function(s){return '<tr><td>'+s.EmpName+'</td><td>'+fmt(s.BasicSalary)+'</td><td>'+fmt(s.Allowances)+'</td><td style="color:var(--err)">'+fmt(s.Deductions)+'</td><td><strong>'+fmt(s.NetSalary)+'</strong></td><td>'+badge(s.Paid==='Yes'?'Paid':'Unpaid')+'</td></tr>';}).join('')+
+        '</tbody></table></div></div>';
+    }
+    document.getElementById('mrContent').innerHTML=html;
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  INVENTORY
+// ════════════════════════════════════════════════════════
+function loadInvt(){
+  gs('getInventory',[],function(data){
+    INVT=data||[];renderInvt(INVT);
+  });
+}
+
+function filterInvt(){
+  var q=document.getElementById('invtSrch').value.toLowerCase();
+  renderInvt(INVT.filter(function(i){return !q||(i.ItemName||'').toLowerCase().includes(q)||(i.Category||'').toLowerCase().includes(q);}));
+}
+
+function renderInvt(data){
+  var tb=document.getElementById('invtTbl');
+  if(!data.length){tb.innerHTML='<tr><td colspan="10"><div class="empty"><div class="ei">📦</div><p>Koi item nahi</p></div></td></tr>';return;}
+  tb.innerHTML=data.map(function(i){
+    var low=Number(i.Remaining||0)<10;
+    return '<tr><td><strong style="color:var(--pr)">'+i.InvtID+'</strong></td><td>'+i.ItemName+'</td><td>'+i.Category+'</td>'+
+      '<td style="color:var(--ok)">'+i.StockIn+'</td><td style="color:var(--err)">'+i.StockOut+'</td>'+
+      '<td style="font-weight:700;color:'+(low?'var(--err)':'var(--ok)')+'">'+i.Remaining+(low?' ⚠️':'')+'</td>'+
+      '<td>'+fmt(i.CostPrice)+'</td><td>'+fmt(i.SellingPrice)+'</td><td>'+i.Unit+'</td>'+
+      '<td style="white-space:nowrap">'+
+      '<button class="btn bo bsm" onclick="openStock(\''+i.InvtID+'\',\''+i.ItemName+'\','+i.Remaining+')">📦</button> '+
+      '<button class="btn bd bsm" onclick="delInvt(\''+i.InvtID+'\')">🗑️</button></td></tr>';
+  }).join('');
+}
+
+function saveInvt(){
+  var nm=document.getElementById('itName').value.trim();if(!nm){toast('Item naam zaroori hai','e');return;}
+  gs('addInventoryItem',[{ItemName:nm,Category:document.getElementById('itCat').value,StockIn:document.getElementById('itSIn').value,StockOut:document.getElementById('itSOt').value,CostPrice:document.getElementById('itCP').value,SellingPrice:document.getElementById('itSP').value,Unit:document.getElementById('itUnit').value}],function(r){
+    if(r&&r.success){closeM('invtModal');toast('Item add ho gaya!','s');loadInvt();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function openStock(id,name,rem){
+  document.getElementById('stID').value=id;
+  document.getElementById('stInfo').textContent='Item: '+name+' | Current Stock: '+rem;
+  document.getElementById('stIn').value='0'; document.getElementById('stOut').value='0';
+  openM('stockModal');
+}
+
+function saveStock(){
+  gs('updateInventoryStock',[document.getElementById('stID').value,document.getElementById('stIn').value,document.getElementById('stOut').value],function(r){
+    if(r&&r.success){closeM('stockModal');toast('Stock update ho gaya!','s');loadInvt();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function delInvt(id){
+  if(!confirm('Delete karna chahte ho?'))return;
+  gs('deleteInventoryItem',[id],function(r){
+    if(r&&r.success){toast('Deleted','s');loadInvt();}else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  USERS
+// ════════════════════════════════════════════════════════
+function loadUsers(){
+  gs('getUsers',[],function(data){
+    var tb=document.getElementById('userTbl');
+    if(!data||!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Koi user nahi</td></tr>';return;}
+    tb.innerHTML=data.map(function(u){
+      return '<tr><td><strong style="color:var(--pr)">'+u.UserID+'</strong></td><td>'+u.Username+'</td><td>'+u.Name+'</td><td>'+badge(u.Role)+'</td><td>'+badge(u.Status)+'</td><td style="color:var(--muted);font-size:11px">'+String(u.LastLogin||'—').substring(0,10)+'</td><td>'+
+        '<button class="btn bo bsm" onclick="editUser(\''+u.UserID+'\',\''+u.Name+'\',\''+u.Username+'\',\''+u.Role+'\',\''+u.Status+'\')">✏️</button></td></tr>';
+    }).join('');
+  });
+}
+
+function saveUser(){
+  var id=document.getElementById('uID').value;
+  var d={UserID:id,Username:document.getElementById('uUsr').value.trim(),Password:document.getElementById('uPwd').value,Role:document.getElementById('uRole').value,Name:document.getElementById('uName').value.trim(),Status:document.getElementById('uStat').value};
+  if(!d.Username||!d.Name){toast('Naam aur username zaroori hain','e');return;}
+  if(!id&&!d.Password){toast('Password zaroori hai','e');return;}
+  gs(id?'updateUser':'addUser',[d],function(r){
+    if(r&&r.success){closeM('userModal');toast('User saved!','s');loadUsers();resetUserForm();}
+    else{toast(r&&r.error||'Error','e');}
+  });
+}
+
+function editUser(id,name,usr,role,stat){
+  document.getElementById('userMT').textContent='Edit User';
+  document.getElementById('uID').value=id;document.getElementById('uName').value=name;
+  document.getElementById('uUsr').value=usr;document.getElementById('uPwd').value='';
+  document.getElementById('uRole').value=role;document.getElementById('uStat').value=stat;
+  openM('userModal');
+}
+
+function resetUserForm(){
+  document.getElementById('uID').value='';document.getElementById('userMT').textContent='Add User';
+  ['uName','uUsr','uPwd'].forEach(function(i){document.getElementById(i).value='';});
+  document.getElementById('uRole').value='Admin';document.getElementById('uStat').value='Active';
+}
+
+// ════════════════════════════════════════════════════════
+//  SALARY MODAL WIRE
+// ════════════════════════════════════════════════════════
+var _origOpenM=openM;
+openM=function(id){
+  if(id==='salManModal')populateEmpSel();
+  _origOpenM(id);
+};
+
+// ════════════════════════════════════════════════════════
+//  PDF / PRINT FUNCTIONS
+// ════════════════════════════════════════════════════════
+function printOpen(title,body){
+  var win=window.open('','_blank','width=900,height=700');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'+
+    '<style>body{font-family:Arial,sans-serif;padding:20px;color:#222;font-size:13px}h2{color:#1a73e8;margin-bottom:4px}p.sub{color:#666;font-size:11px;margin-bottom:16px}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{padding:7px 10px;border:1px solid #ddd;text-align:left}th{background:#f1f3f4;font-size:11px;text-transform:uppercase}tfoot td{font-weight:700;background:#f8f9fa}.b-ok{background:#e6f4ea;color:#1e8e3e}.b-err{background:#fce8e6;color:#d93025}.b-warn{background:#fef7e0;color:#f29900}.badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}@media print{body{padding:5px}}</style>'+
+    '</head><body>'+body+'<script>window.onload=function(){window.print()}<\/script></body></html>');
+  win.document.close();
+}
+
+function printEmployeeList(){
+  var rows=document.querySelectorAll('#empTbl tr');
+  var html='<h2>👨‍💼 Employee List</h2><p class="sub">Date: '+new Date().toLocaleDateString()+'</p>'+
+    '<table><thead><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Phone</th><th>Basic Salary</th><th>Joining</th><th>Status</th></tr></thead><tbody>'+
+    EMP.map(function(e){return '<tr><td>'+e.EmpID+'</td><td><strong>'+e.Name+'</strong></td><td>'+e.Department+'</td><td>'+e.Designation+'</td><td>'+e.Phone+'</td><td>'+fmt(e.BasicSalary)+'</td><td>'+String(e.JoiningDate||'').substring(0,10)+'</td><td>'+e.Status+'</td></tr>';}).join('')+
+    '</tbody><tfoot><tr><td colspan="8">Total Employees: '+EMP.length+' | Active: '+EMP.filter(function(e){return e.Status==='Active';}).length+'</td></tr></tfoot></table>';
+  printOpen('Employee List',html);
+}
+
+function printEmpCard(id){
+  var e=EMP.find(function(x){return x.EmpID===id;});if(!e)return;
+  var html='<h2>👤 Employee Card</h2>'+
+    '<table><tr><th>Employee ID</th><td><strong>'+e.EmpID+'</strong></td></tr>'+
+    '<tr><th>Name</th><td>'+e.Name+'</td></tr>'+
+    '<tr><th>Father Name</th><td>'+e.FatherName+'</td></tr>'+
+    '<tr><th>CNIC</th><td>'+e.CNIC+'</td></tr>'+
+    '<tr><th>Phone</th><td>'+e.Phone+'</td></tr>'+
+    '<tr><th>Address</th><td>'+e.Address+'</td></tr>'+
+    '<tr><th>Department</th><td>'+e.Department+'</td></tr>'+
+    '<tr><th>Designation</th><td>'+e.Designation+'</td></tr>'+
+    '<tr><th>Joining Date</th><td>'+String(e.JoiningDate||'').substring(0,10)+'</td></tr>'+
+    '<tr><th>Basic Salary</th><td>'+fmt(e.BasicSalary)+'</td></tr>'+
+    '<tr><th>Status</th><td>'+e.Status+'</td></tr></table>';
+  printOpen('Employee Card — '+e.Name,html);
+}
+
+function printAttendance(){
+  var date=document.getElementById('attDate').value;
+  var records=Object.values(attMap);
+  if(!records.length){toast('Pehle attendance load karo','e');return;}
+  var html='<h2>📅 Attendance Sheet</h2><p class="sub">Date: '+date+' | Total: '+records.length+'</p>'+
+    '<table><thead><tr><th>Emp ID</th><th>Employee</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead><tbody>'+
+    records.map(function(r){return '<tr><td>'+r.EmpID+'</td><td>'+r.EmpName+'</td><td>'+r.Status+'</td><td>'+r.CheckIn+'</td><td>'+r.CheckOut+'</td></tr>';}).join('')+
+    '</tbody><tfoot><tr><td colspan="5">Present: '+records.filter(function(r){return r.Status==='Present';}).length+
+    ' | Absent: '+records.filter(function(r){return r.Status==='Absent';}).length+
+    ' | Late: '+records.filter(function(r){return r.Status==='Late';}).length+'</td></tr></tfoot></table>';
+  printOpen('Attendance — '+date,html);
+}
+
+function printSalarySheet(){
+  var m=document.getElementById('salMo').value;
+  var y=document.getElementById('salYr').value;
+  gs('getSalaries',[m||null,y||null],function(data){
+    if(!data||!data.length){toast('Koi salary record nahi','e');return;}
+    var tot=data.reduce(function(s,r){return s+Number(r.NetSalary||0);},0);
+    var paid=data.filter(function(s){return s.Paid==='Yes';}).reduce(function(s,r){return s+Number(r.NetSalary||0);},0);
+    var html='<h2>💰 Salary Sheet</h2><p class="sub">Month: '+mname(m)+' '+y+'</p>'+
+      '<table><thead><tr><th>Sal ID</th><th>Employee</th><th>Basic</th><th>Allowances</th><th>Deductions</th><th>Net Salary</th><th>Status</th><th>Paid Date</th></tr></thead><tbody>'+
+      data.map(function(s){return '<tr><td>'+s.SalID+'</td><td>'+s.EmpName+'</td><td>'+fmt(s.BasicSalary)+'</td><td>'+fmt(s.Allowances)+'</td><td>'+fmt(s.Deductions)+'</td><td><strong>'+fmt(s.NetSalary)+'</strong></td><td>'+s.Paid+'</td><td>'+String(s.PaidDate||'').substring(0,10)+'</td></tr>';}).join('')+
+      '</tbody><tfoot><tr><td colspan="5"><strong>TOTALS</strong></td><td><strong>'+fmt(tot)+'</strong></td><td colspan="2">Paid: '+fmt(paid)+' | Remaining: '+fmt(tot-paid)+'</td></tr></tfoot></table>';
+    printOpen('Salary Sheet — '+mname(m)+' '+y,html);
+  });
+}
+
+function printExpenses(){
+  var html='<h2>📉 Expense Report</h2><p class="sub">Date: '+new Date().toLocaleDateString()+'</p>'+
+    '<table><thead><tr><th>Exp ID</th><th>Date</th><th>Category</th><th>Amount</th><th>Description</th></tr></thead><tbody>'+
+    EXP.map(function(e){return '<tr><td>'+e.ExpID+'</td><td>'+String(e.Date||'').substring(0,10)+'</td><td>'+e.Category+'</td><td>'+fmt(e.Amount)+'</td><td>'+e.Description+'</td></tr>';}).join('')+
+    '</tbody><tfoot><tr><td colspan="3"><strong>TOTAL</strong></td><td><strong>'+fmt(EXP.reduce(function(s,e){return s+Number(e.Amount||0);},0))+'</strong></td><td></td></tr></tfoot></table>';
+  printOpen('Expense Report',html);
+}
+
+function printInventory(){
+  var html='<h2>📦 Inventory Report</h2><p class="sub">Date: '+new Date().toLocaleDateString()+'</p>'+
+    '<table><thead><tr><th>Item ID</th><th>Name</th><th>Category</th><th>Stock In</th><th>Stock Out</th><th>Remaining</th><th>Cost</th><th>Selling</th></tr></thead><tbody>'+
+    INVT.map(function(i){return '<tr><td>'+i.InvtID+'</td><td>'+i.ItemName+'</td><td>'+i.Category+'</td><td>'+i.StockIn+'</td><td>'+i.StockOut+'</td><td style="font-weight:700;color:'+(Number(i.Remaining)<10?'#d93025':'#1e8e3e')+'">'+i.Remaining+'</td><td>'+fmt(i.CostPrice)+'</td><td>'+fmt(i.SellingPrice)+'</td></tr>';}).join('')+
+    '</tbody></table>';
+  printOpen('Inventory Report',html);
+}
+
+function printLedger(){
+  var acc=document.getElementById('ledAcc').value;if(!acc)return;
+  gs('getLedger',[acc],function(d){
+    var html='<h2>📖 Ledger — '+acc+'</h2><p class="sub">Opening Balance: '+fmt(d.openingBalance)+'</p>'+
+      '<table><thead><tr><th>Date</th><th>Description</th><th>Reference</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th style="text-align:right">Balance</th></tr></thead><tbody>'+
+      (d.entries||[]).map(function(e){return '<tr><td>'+String(e.date||'').substring(0,10)+'</td><td>'+e.description+'</td><td>'+e.reference+'</td><td style="text-align:right">'+( e.debit?fmt(e.debit):'')+'</td><td style="text-align:right">'+(e.credit?fmt(e.credit):'')+'</td><td style="text-align:right;font-weight:700">'+fmt(e.balance)+'</td></tr>';}).join('')+
+      '</tbody><tfoot><tr><td colspan="5">Closing Balance</td><td style="text-align:right;font-weight:700">'+fmt(d.closingBalance)+'</td></tr></tfoot></table>';
+    printOpen('Ledger — '+acc,html);
+  });
+}
+
+function printMR(){
+  var m=document.getElementById('mrMo').value;var y=document.getElementById('mrYr').value;
+  gs('getMonthlyReport',[m,y],function(d){
+    var html='<h2>📅 Monthly Report — '+mname(m)+' '+y+'</h2>'+
+      '<table><tr><th>Income</th><td><strong>'+fmt(d.totalIncome)+'</strong></td></tr>'+
+      '<tr><th>Salary Expense</th><td>'+fmt(d.totalSalaryExpense)+'</td></tr>'+
+      '<tr><th>Other Expenses</th><td>'+fmt(d.totalExpenses)+'</td></tr>'+
+      '<tr><th>Net Profit/Loss</th><td><strong>'+fmt(d.netProfit)+'</strong></td></tr></table>'+
+      (d.salaryRecords&&d.salaryRecords.length?
+        '<h3 style="margin-top:16px">Salary Sheet</h3><table><thead><tr><th>Employee</th><th>Net Salary</th><th>Status</th></tr></thead><tbody>'+
+        d.salaryRecords.map(function(s){return '<tr><td>'+s.EmpName+'</td><td>'+fmt(s.NetSalary)+'</td><td>'+s.Paid+'</td></tr>';}).join('')+'</tbody></table>':'');
+    printOpen('Monthly Report — '+mname(m)+' '+y,html);
+  });
+}
+</script>
+</body>
+</html>
